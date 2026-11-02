@@ -15,6 +15,7 @@ import { sendWsEnvelope } from '../realtime/ws-envelope.js';
 import type { Env } from '../../config/env.js';
 import { singleFlight, forgetSingleFlight } from './single-flight.js';
 import { transportPortRange } from './rtc-ports.js';
+import { remoteListenAddress } from './listen-address.js';
 import {
   claimScreenShare,
   clearScreenShareSlots,
@@ -543,10 +544,6 @@ export function closeVoiceRouter(channelId: number): void {
   }
 }
 
-function isLikelyIpv4(host: string): boolean {
-  return /^(?:\d{1,3}\.){3}\d{1,3}$/.test(host.trim());
-}
-
 function socketRemoteAddress(socket: WebSocket): string | undefined {
   const fromUpgrade = getRememberedWsClientIp(socket);
   if (typeof fromUpgrade === 'string' && fromUpgrade.length > 0) {
@@ -583,20 +580,6 @@ function iceServersForClientSocket(socket: WebSocket): IceServer[] {
     userId: userId ?? 0,
     nowSec: Math.floor(Date.now() / 1000),
   });
-}
-
-/** Адрес для клиентов не с loopback: bind и announced из env. */
-function remoteListenAddress(env: Env): { bindIp: string; announced: string | undefined } {
-  let announced = env.MEDIASOUP_ANNOUNCED_IP?.trim() || undefined;
-  if (!announced && env.MEDIASOUP_ANNOUNCE_LOCALHOST === '1') {
-    announced = '127.0.0.1';
-  }
-  const explicitBind = env.MEDIASOUP_BIND_IP?.trim();
-  let bindIp = explicitBind || env.MEDIASOUP_LISTEN_IP.trim();
-  if (!explicitBind && env.MEDIASOUP_BIND_TO_ANNOUNCED === '1' && announced && isLikelyIpv4(announced)) {
-    bindIp = announced.trim();
-  }
-  return { bindIp, announced };
 }
 
 /** Адрес для loopback-клиента (два окна на одном ПК): свой транспорт на 127.0.0.1. */
