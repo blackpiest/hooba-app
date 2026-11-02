@@ -113,7 +113,7 @@ hooba help        # все команды
 
 ## Ошибки и предложения
 
-Нашли ошибку или есть идея — [создайте issue](https://github.com/blackpiest/hooba-app/issues/new/choose). Вопросы по установке и настройке разобраны в [документации для владельцев](https://docs.hooba.space).
+Нашли ошибку или есть идея — [создайте issue](https://github.com/blackpiest/hooba-app/issues/new/choose). Вопросы по установке и настройке разобраны в [документации для владельцев сервера Hooba](https://docs.hooba.space).
 
 Уязвимости — только приватно, см. [SECURITY.md](SECURITY.md).
 
