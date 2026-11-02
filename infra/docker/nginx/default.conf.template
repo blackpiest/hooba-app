@@ -100,18 +100,6 @@ server {
         proxy_send_timeout 86400s;
     }
 
-    location /updates/ {
-        add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
-        return 404;
-    }
-
-    location /updates/download/ {
-        alias /usr/share/nginx/desktop-updates/;
-        autoindex off;
-        add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
-        add_header Cache-Control "no-cache" always;
-    }
-
     # PWA: service worker и манифест всегда проверяются заново — иначе новая версия приходит с опозданием.
     location = /sw.js {
         add_header Cache-Control "no-cache" always;

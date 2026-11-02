@@ -13,8 +13,6 @@ infra/docker/.env.prod
 # Копия TLS-сертификата для coturn (install.sh cert-hooks)
 infra/docker/turn-tls/
 
-# Бэкапы install.sh
+# Бэкапы и журналы install.sh
 backups/
-
-desktop-updates/*
-!desktop-updates/.gitkeep
+logs/

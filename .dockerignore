@@ -10,5 +10,4 @@
 infra/docker/turn-tls
 backups
 logs
-desktop-updates
 desktop/release

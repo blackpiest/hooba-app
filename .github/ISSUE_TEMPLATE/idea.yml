@@ -1,0 +1,15 @@
+name: Предложение
+description: Идея, чего не хватает в Hooba
+labels: [idea]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Что неудобно или чего не хватает
+      description: Опишите задачу, а не только решение — так проще найти подходящий вариант
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Как это могло бы работать

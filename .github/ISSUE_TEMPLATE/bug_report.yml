@@ -1,0 +1,47 @@
+name: Ошибка
+description: Что-то работает не так, как должно
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Не вставляйте сюда пароли, токены, содержимое `.env.prod` и переписку участников. Уязвимости — только [приватно](https://github.com/blackpiest/hooba-app/security/advisories/new).
+  - type: input
+    id: version
+    attributes:
+      label: Версия
+      description: "Вывод на сервере: `git -C /opt/hooba log -1 --oneline`"
+      placeholder: release main@abc1234
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Где проблема
+      options:
+        - Установка или команда hooba
+        - Веб-приложение в браузере
+        - Приложение для компьютера
+        - Голос или демонстрация экрана
+        - Другое
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Что случилось
+      description: Что вы делали, что ожидали увидеть и что получилось вместо этого
+    validations:
+      required: true
+  - type: textarea
+    id: status
+    attributes:
+      label: Вывод hooba status
+      description: Если проблема на сервере. Вставьте как есть
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Журнал или ошибка
+      description: Текст ошибки, кусок `hooba logs` или файла из `/opt/hooba/logs`. Перед отправкой проверьте, что там нет паролей и токенов
+      render: text

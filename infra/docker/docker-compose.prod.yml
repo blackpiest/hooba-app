@@ -137,7 +137,6 @@ services:
       - "${HTTPS_PORT:-443}:443"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ../../desktop-updates:/usr/share/nginx/desktop-updates:ro
       - uploads_prod:/data/uploads:ro
     depends_on:
       backend:

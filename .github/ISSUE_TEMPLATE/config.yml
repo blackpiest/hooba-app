@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Уязвимость
+    url: https://github.com/blackpiest/hooba-app/security/advisories/new
+    about: Сообщите приватно, не в публичном issue
+  - name: Вопросы по установке и настройке
+    url: https://docs.hooba.space
+    about: Документация для владельцев серверов
