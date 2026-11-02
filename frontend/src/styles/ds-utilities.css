@@ -1,0 +1,746 @@
+/* Утилиты и анимации дизайн-системы. Нужны там, где Tailwind-класса «в одну строку» не хватает.
+   Состояния берутся из data-атрибутов react-aria-components (data-hovered / data-pressed / …). */
+
+/* Фокус с клавиатуры: обводка отключена (--ds-focus-ring: none), утилита оставлена, чтобы не трогать разметку. */
+@utility ds-focus {
+  &[data-focus-visible] {
+    outline: var(--ds-focus-ring);
+    outline-offset: var(--ds-focus-offset);
+  }
+}
+
+/* «Клавиша» в духе пиксельных кнопок: срезанные на «пиксель» углы, тёмный контур 2px и фаска внутри рамки
+   (светлая сверху-слева, тёмная снизу-справа). Всё рисуется внутри бокса кнопки, наружу ничего не выступает —
+   кнопка выравнивается с соседями (поле ввода, чипы) без поправок на тень.
+   hover — кнопка сдвигается на пол-глубины и светлеет фаска, нажатие — сдвиг на полную глубину и фаска инвертируется (клавиша «утоплена»). Цвет — --key-base, толщина фаски — --press. */
+@utility ds-key {
+  --press: var(--ds-press-offset);
+  --key-base: var(--color-brand);
+  --key-edge: color-mix(in oklab, var(--key-base) 35%, black);
+  --key-dark: color-mix(in oklab, var(--key-base) 62%, black);
+  --key-light: color-mix(in oklab, var(--key-base) 62%, white);
+  --bevel: calc(var(--press) / 2);
+  box-shadow:
+    inset 0 0 0 2px var(--key-edge),
+    inset calc(-2px - var(--bevel)) calc(-2px - var(--bevel)) 0 0 var(--key-dark),
+    inset calc(2px + var(--bevel)) calc(2px + var(--bevel)) 0 0 var(--key-light);
+  clip-path: polygon(
+    3px 0,
+    calc(100% - 3px) 0,
+    calc(100% - 3px) 3px,
+    100% 3px,
+    100% calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 3px),
+    calc(100% - 3px) 100%,
+    3px 100%,
+    3px calc(100% - 3px),
+    0 calc(100% - 3px),
+    0 3px,
+    3px 3px
+  );
+  transition:
+    background-color 0.15s,
+    translate 0.15s steps(2, end);
+
+  &[data-hovered] {
+    --key-light: color-mix(in oklab, var(--key-base) 45%, white);
+    translate: calc(var(--press) / 2) calc(var(--press) / 2);
+  }
+  &[data-pressed] {
+    translate: var(--press) var(--press);
+    box-shadow:
+      inset 0 0 0 2px var(--key-edge),
+      inset calc(-2px - var(--bevel)) calc(-2px - var(--bevel)) 0 0 var(--key-light),
+      inset calc(2px + var(--bevel)) calc(2px + var(--bevel)) 0 0 var(--key-dark);
+  }
+  &[data-disabled],
+  &[data-pending] {
+    translate: none;
+    box-shadow: inset 0 0 0 2px var(--key-edge);
+  }
+}
+
+/* Три пикселя бегут волной (индикатор загрузки внутри кнопки). Цвет — currentColor. */
+@utility ds-wave {
+  position: absolute;
+  left: calc(50% - 2px);
+  top: calc(50% - 2px);
+  width: 4px;
+  height: 4px;
+  background: currentColor;
+  animation: ds-pxwave 0.9s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes ds-pxwave {
+  0%,
+  100% {
+    translate: -8px -3px;
+    box-shadow:
+      8px 0 0 currentColor,
+      16px 0 0 currentColor;
+  }
+  33% {
+    translate: -8px 0;
+    box-shadow:
+      8px -3px 0 currentColor,
+      16px 0 0 currentColor;
+  }
+  66% {
+    translate: -8px 0;
+    box-shadow:
+      8px 0 0 currentColor,
+      16px -3px 0 currentColor;
+  }
+}
+
+/* ---------- Индикаторы загрузки ---------- */
+
+/* Светлячок на орбите: позиция по номеру --n (0..7) и радиусу --r, голова коралловая, шлейф гаснет. */
+@utility ds-orbit {
+  --a: calc(var(--n) * 45deg);
+  translate: calc(sin(var(--a)) * var(--r)) calc(cos(var(--a)) * var(--r) * -1);
+  animation: ds-firefly 0.96s linear infinite;
+  animation-delay: calc(var(--n) * 0.12s - 0.96s);
+}
+
+/* Прыжок со сжатием при приземлении (логотип-загрузчик) и тень под ним. */
+@utility ds-hop {
+  transform-origin: 50% 100%;
+  animation: ds-hop 0.9s infinite;
+}
+@utility ds-hop-shadow {
+  animation: ds-hop-shadow 0.9s infinite;
+}
+
+/* Слайм-маскот: покадровые анимации (steps) по пиксельной сетке. Источник — temp_folder/Анимации слайма-html. */
+@utility ds-slime-hop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ds-slime-hop 0.8s steps(1, end) infinite;
+}
+@utility ds-slime-shadow {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: ds-slime-shadow 0.8s steps(1, end) infinite;
+}
+@utility ds-slime-blink {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: ds-slime-blink 4s steps(1, end) infinite;
+}
+@utility ds-slime-breathe {
+  transform-origin: 50% 100%;
+  animation: ds-slime-breathe 2.4s steps(1, end) infinite;
+}
+@utility ds-slime-shake {
+  animation: ds-slime-shake 3s steps(1, end) infinite;
+}
+@utility ds-slime-melt {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ds-slime-melt 3s steps(1, end) infinite;
+}
+@utility ds-slime-drop {
+  animation: ds-slime-drop 3s steps(1, end) infinite;
+}
+@utility ds-slime-splash {
+  animation: ds-slime-splash 3s steps(1, end) infinite;
+}
+
+/* Фон auth-экранов (BrandBackdrop): точечная сетка дрейфует по диагонали, светлячки всплывают и мерцают. */
+@utility ds-bd-grid {
+  background: radial-gradient(color-mix(in oklab, var(--color-brand-text) 16%, transparent) 1px, transparent 1.5px) 0 0 / 20px 20px;
+  animation: ds-bd-drift 40s linear infinite;
+}
+@utility ds-bd-firefly {
+  opacity: 0;
+  box-shadow: 0 0 8px 1px currentColor;
+  animation-name: ds-bd-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* Прыгающие пиксели (три штуки с задержкой --d). */
+@utility ds-pxhop {
+  animation: ds-pxhop 1s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+
+/* Блик на скелетоне. */
+@utility ds-shimmer {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, #ffffff0d, transparent);
+    animation: ds-shimmer 1.4s steps(12) infinite;
+  }
+}
+
+@keyframes ds-bd-drift {
+  to {
+    translate: 20px 20px;
+  }
+}
+@keyframes ds-bd-float {
+  0% {
+    opacity: 0;
+    translate: 0 0;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 6px -72px;
+  }
+}
+
+@keyframes ds-firefly {
+  0% {
+    opacity: 1;
+    scale: 1.25;
+    background: var(--color-accent);
+  }
+  12% {
+    background: var(--color-brand-text);
+  }
+  100% {
+    opacity: 0.1;
+    scale: 0.7;
+    background: var(--color-brand);
+  }
+}
+
+@keyframes ds-hop {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1.12 0.86;
+    animation-timing-function: cubic-bezier(0.2, 0.75, 0.35, 1);
+  }
+  50% {
+    translate: 0 -14px;
+    scale: 0.94 1.08;
+    animation-timing-function: cubic-bezier(0.65, 0, 0.8, 0.3);
+  }
+}
+
+@keyframes ds-hop-shadow {
+  0%,
+  100% {
+    scale: 1.1 1;
+    opacity: 0.75;
+    animation-timing-function: cubic-bezier(0.2, 0.75, 0.35, 1);
+  }
+  50% {
+    scale: 0.55 1;
+    opacity: 0.3;
+    animation-timing-function: cubic-bezier(0.65, 0, 0.8, 0.3);
+  }
+}
+
+@keyframes ds-pxhop {
+  0%,
+  55%,
+  100% {
+    translate: 0 0;
+  }
+  25% {
+    translate: 0 -6px;
+  }
+}
+
+@keyframes ds-slime-hop {
+  0% { transform: translateY(0) scale(1.1, 0.8); }
+  15% { transform: translateY(-1px) scale(0.92, 1.1); }
+  30% { transform: translateY(-3px) scale(0.96, 1.05); }
+  45% { transform: translateY(-4px) scale(1, 1); }
+  60% { transform: translateY(-3px) scale(1, 1); }
+  75% { transform: translateY(-1px) scale(0.96, 1.05); }
+  90%, 100% { transform: translateY(0) scale(1.1, 0.8); }
+}
+@keyframes ds-slime-shadow {
+  0% { transform: scaleX(1.1); }
+  30% { transform: scaleX(0.8); }
+  45% { transform: scaleX(0.6); }
+  60% { transform: scaleX(0.8); }
+  90%, 100% { transform: scaleX(1.1); }
+}
+@keyframes ds-slime-blink {
+  0% { transform: scaleY(1); }
+  92% { transform: scaleY(0.5); }
+  94% { transform: scaleY(0); }
+  96% { transform: scaleY(0.5); }
+  98%, 100% { transform: scaleY(1); }
+}
+@keyframes ds-slime-breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.04, 0.92); }
+}
+@keyframes ds-slime-shake {
+  0% { transform: translateX(0); }
+  4% { transform: translateX(-1px); }
+  8% { transform: translateX(1px); }
+  12% { transform: translateX(-1px); }
+  16% { transform: translateX(1px); }
+  20%, 100% { transform: translateX(0); }
+}
+@keyframes ds-slime-melt {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.05, 0.9); }
+  40% { transform: scale(1.1, 0.8); }
+  50%, 80% { transform: scale(1.16, 0.7); }
+  88% { transform: scale(1.05, 0.9); }
+  94%, 100% { transform: scale(1, 1); }
+}
+@keyframes ds-slime-drop {
+  0% { opacity: 0; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(0); }
+  55% { opacity: 1; transform: translateY(1px); }
+  65% { opacity: 1; transform: translateY(2px); }
+  72% { opacity: 1; transform: translateY(4px); }
+  78%, 100% { opacity: 0; transform: translateY(4px); }
+}
+@keyframes ds-slime-splash {
+  0%, 77% { opacity: 0; }
+  78%, 88% { opacity: 1; }
+  89%, 100% { opacity: 0; }
+}
+
+@keyframes ds-shimmer {
+  from {
+    translate: -100% 0;
+  }
+  to {
+    translate: 100% 0;
+  }
+}
+
+/* «Недоступно»: короткая тряска закрытой косметики, лимита закрепа (перезапуск — utils/restart-animation). */
+@utility ds-shake {
+  animation: ds-shake 0.3s steps(6, end);
+}
+@keyframes ds-shake {
+  0%,
+  100% {
+    translate: 0;
+  }
+  20%,
+  60% {
+    translate: -4px 0;
+  }
+  40%,
+  80% {
+    translate: 4px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="ds-shake"],
+  [class*="ds-orbit"],
+  [class*="ds-hop"],
+  [class*="ds-slime"],
+  [class*="ds-pxhop"],
+  [class*="ds-bd-"],
+  [class*="ds-shimmer"]::after {
+    animation: none !important;
+  }
+}
+
+/* ---------- Появление оверлеев (состояния data-entering / data-exiting у react-aria) ---------- */
+
+/* Подложка и мелкие поповеры: быстрое проявление. */
+@utility ds-fade {
+  &[data-entering] {
+    animation: ds-fade-in 0.16s ease-out;
+  }
+  &[data-exiting] {
+    animation: ds-fade-out 0.12s ease-in forwards;
+  }
+}
+
+/* Модалка: проявление с лёгким «подпрыгиванием». */
+@utility ds-pop {
+  &[data-entering] {
+    animation: ds-pop-in 0.22s var(--ease-pop);
+  }
+  &[data-exiting] {
+    animation: ds-fade-out 0.12s ease-in forwards;
+  }
+}
+
+/* Меню/поповер: короткий сдвиг от места вызова. */
+@utility ds-drop {
+  &[data-entering] {
+    animation: ds-drop-in 0.15s var(--ease-pop);
+  }
+  &[data-exiting] {
+    animation: ds-fade-out 0.1s linear forwards;
+  }
+}
+
+@keyframes ds-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ds-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes ds-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ds-drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="ds-fade"],
+  [class*="ds-pop"],
+  [class*="ds-drop"] {
+    animation: none !important;
+  }
+}
+
+/* ---------- Toast / Progress ---------- */
+
+@utility ds-toast-in {
+  animation: ds-toast-in 0.16s ease-out;
+}
+
+/* Неопределённый прогресс: полоска бежит слева направо ступеньками. */
+@utility ds-indeterminate {
+  width: 30%;
+  animation: ds-indet 1.1s steps(10) infinite;
+}
+
+@keyframes ds-toast-in {
+  from {
+    translate: 30px 0;
+    opacity: 0;
+  }
+  to {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+
+@keyframes ds-indet {
+  from {
+    translate: -100% 0;
+  }
+  to {
+    translate: 340% 0;
+  }
+}
+
+@keyframes ds-toast-bar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* ---------- Эквалайзер «говорит» ---------- */
+@utility ds-eq {
+  transform-origin: bottom;
+  animation: ds-eq 1s steps(4) infinite;
+  animation-delay: var(--d, -0.3s);
+}
+
+@keyframes ds-eq {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* Окна-оверлеи десктопа (/overlay, /live): прозрачный фон, размер задаёт содержимое. */
+html.ds-overlay,
+html.ds-overlay body,
+html.ns-desktop.ds-overlay #root {
+  background: transparent;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+@keyframes ds-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.ds-live-pulse {
+  animation: ds-live-pulse 1.6s ease-in-out infinite;
+}
+
+/* Пиксельная табличка (мини-профиль): тёмный фон, контур 2px и срезанные на «пиксель» углы.
+   Цвет контура — --plate-edge (задаёт скин рамки). */
+@utility ds-px-plate {
+  background: var(--color-bg);
+  box-shadow: inset 0 0 0 2px var(--plate-edge, var(--color-line-strong));
+  clip-path: polygon(
+    3px 0,
+    calc(100% - 3px) 0,
+    calc(100% - 3px) 3px,
+    100% 3px,
+    100% calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 3px),
+    calc(100% - 3px) 100%,
+    3px 100%,
+    3px calc(100% - 3px),
+    0 calc(100% - 3px),
+    0 3px,
+    3px 3px
+  );
+}
+
+/* Светлый текст с тёмной обводкой 2px: читается на любом фоне рамки. */
+@utility ds-px-outline {
+  text-shadow:
+    2px 0 0 var(--color-bg),
+    -2px 0 0 var(--color-bg),
+    0 2px 0 var(--color-bg),
+    0 -2px 0 var(--color-bg),
+    2px 2px 0 var(--color-bg),
+    -2px 2px 0 var(--color-bg),
+    2px -2px 0 var(--color-bg),
+    -2px -2px 0 var(--color-bg);
+}
+
+/*
+ * Однострочный текст с тёмным контуром 2px и многоточием (@username в мини-профиле).
+ * Контур — обводка глифа под заливкой (paint-order), а не тени: ровный по кривым.
+ * overflow: clip с запасом не срезает контур у краёв, многоточие при этом работает.
+ */
+@utility ds-text-outline {
+  overflow: clip;
+  overflow-clip-margin: 3px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -webkit-text-stroke: 4px var(--color-bg);
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+}
+
+/* ---------- Мини-профиль: косметика (shared/ui/profile-card) ----------
+   Фоны и рамки рисуются по спеке из каталога сервера: подложка --bgc (или градиент инлайн) и слои-тайлы
+   (--tile, --tile-px из backgrounds.ts); рамка — --frame, --frame-line, --plate-edge, --frame-inner, свечение --glow-*.
+   Персонаж — idle на steps(). Движение фона только через steps(). */
+.ds-pc-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--bgc, var(--color-brand-soft));
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-shadow:
+      inset 0 0 0 6px #0000001f,
+      inset 0 -40px 40px -30px #0000004d;
+  }
+}
+/* Слой тайлов. --tile-scale уменьшает мотив на маленьких аватарах; движение — на один тайл за цикл. */
+.ds-pc-bg-layer {
+  --tile-size: calc(var(--tile-px, 40px) * var(--tile-scale, 1));
+  position: absolute;
+  inset: 0;
+  background: var(--tile) 0 0 / var(--tile-size) var(--tile-size);
+}
+.ds-pc-bg-layer--image {
+  image-rendering: pixelated;
+}
+.ds-pc-bg-layer--scroll {
+  animation: ds-pc-scroll 4s steps(20) infinite;
+}
+.ds-pc-bg-layer--drift {
+  animation: ds-pc-drift 6s steps(30) infinite;
+}
+.ds-pc-bg-layer--blink {
+  animation: ds-pc-blink 1.6s steps(1) infinite;
+}
+.ds-pc-bg-layer--scroll.ds-pc-bg-layer--blink {
+  animation:
+    ds-pc-scroll 4s steps(20) infinite,
+    ds-pc-blink 1.6s steps(1) infinite;
+}
+.ds-pc-bg-layer--drift.ds-pc-bg-layer--blink {
+  animation:
+    ds-pc-drift 6s steps(30) infinite,
+    ds-pc-blink 1.6s steps(1) infinite;
+}
+/* Маленькие аватары и миниатюры: без движения и виньетки. */
+.ds-pc-bg--still .ds-pc-bg-layer {
+  animation: none;
+}
+.ds-pc-bg--still::after {
+  display: none;
+}
+
+/* Ноги на «линии пола» — 2px от низа окна. */
+.ds-pc-char {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 91%;
+  aspect-ratio: 1;
+  translate: -50% 0;
+  image-rendering: pixelated;
+  animation: ds-pc-idle 1.1s steps(1) infinite;
+}
+/* Idle-спрайт: окно на один кадр, лента сдвигается из JS (Web Animations). */
+.ds-pc-char--sprite {
+  overflow: hidden;
+  animation: none;
+}
+.ds-pc-sprite {
+  display: block;
+  height: 100%;
+  max-width: none;
+  image-rendering: pixelated;
+}
+
+/* Свечение рамки: тень пульсирует между --glow-a/--glow-min и --glow-b/--glow-max. */
+.ds-pc-frame--glow {
+  animation: ds-pc-glow var(--glow-period, 2.8s) ease-in-out infinite;
+}
+/* Искра: квадратный пиксель, поднимается на --rise и уходит наружу (--spark-dx), гаснет.
+   Цвет, контур, свечение, длительность и задержка — inline (frame-skins.tsx). */
+.ds-pc-spark {
+  position: absolute;
+  width: var(--spark-size, 4px);
+  height: var(--spark-size, 4px);
+  opacity: 0;
+  animation: ds-pc-spark 3s linear infinite backwards;
+}
+/* Снежинка: пиксельный силуэт 5×5 маской поверх цвета искры; тень — drop-shadow на родителе. */
+.ds-pc-spark-flake {
+  position: absolute;
+  inset: 0;
+  --flake: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 5' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM4 0h1v1H4zM1 1h3v1H1zM0 2h5v1H0zM1 3h3v1H1zM0 4h1v1H0zM2 4h1v1H2zM4 4h1v1H4z'/%3E%3C/svg%3E");
+  -webkit-mask: var(--flake) center / 100% 100% no-repeat;
+  mask: var(--flake) center / 100% 100% no-repeat;
+}
+@keyframes ds-pc-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1);
+  }
+  10% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--spark-dx, 0), calc(var(--rise, 30px) * -1)) scale(var(--end-scale, 0.6));
+  }
+}
+@keyframes ds-pc-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 var(--glow-min, 6px) var(--glow-a, transparent);
+  }
+  50% {
+    box-shadow: 0 0 var(--glow-max, 14px) var(--glow-b, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-pc-bg-layer,
+  .ds-pc-char {
+    animation-play-state: paused;
+  }
+  .ds-pc-frame--glow {
+    animation: none;
+  }
+  /* Искры замирают на месте, оставаясь видимыми. */
+  .ds-pc-spark {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+@keyframes ds-pc-scroll {
+  to {
+    background-position: var(--tile-size) var(--tile-size);
+  }
+}
+@keyframes ds-pc-drift {
+  to {
+    background-position: calc(var(--tile-size) * -1) 0;
+  }
+}
+@keyframes ds-pc-blink {
+  0%,
+  64%,
+  100% {
+    opacity: 1;
+  }
+  65%,
+  99% {
+    opacity: 0;
+  }
+}
+@keyframes ds-pc-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}

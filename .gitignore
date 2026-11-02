@@ -1,0 +1,20 @@
+node_modules/
+dist/
+*.log
+*.tsbuildinfo
+.pnpm-store
+
+# Секреты установки
+.env
+.env.*
+!.env.example
+infra/docker/.env.prod
+
+# Копия TLS-сертификата для coturn (install.sh cert-hooks)
+infra/docker/turn-tls/
+
+# Бэкапы install.sh
+backups/
+
+desktop-updates/*
+!desktop-updates/.gitkeep

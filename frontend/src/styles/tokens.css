@@ -1,0 +1,100 @@
+/* ==========================================================================
+   Токены дизайн-системы Hooba (источник — temp_folder/design-system/tokens.css).
+   Здесь только переменные. Tailwind v4 строит из @theme утилиты: bg-surface, text-muted …
+
+   Правила кита: скругления отключены (--radius-*: initial) — прямые углы; тени — только жёсткие offset
+   (shadow-key / shadow-card / shadow-soft / shadow-pop); шрифты: font-heading / font-ui / font-label.
+   ========================================================================== */
+
+@theme {
+  /* Прямые углы: утилиты rounded-* не генерируются */
+  --radius-*: initial;
+
+  /* Поверхности */
+  --color-bg: #10101a;
+  --color-surface: #171725;
+  --color-elevated: #211f32;
+  --color-paper: #efebf7;
+
+  /* Линии */
+  --color-line: #2d2b3d;
+  --color-line-strong: #514766;
+
+  /* Текст */
+  --color-fg: #f5f4fc;
+  --color-muted: #a5a3b5;
+  --color-on-paper: #10101a;
+  --color-on-accent: #10101a;
+  /* Текст и значки на сплошном фоне бренда (кнопки, галочки): не завязаны на --color-fg, чтобы менять палитру одним файлом */
+  --color-on-brand: #f5f4fc;
+
+  /* Бренд и акцент */
+  --color-brand: #7c69f7;
+  --color-brand-hover: color-mix(in oklab, var(--color-brand) 88%, black);
+  --color-brand-light: color-mix(in oklab, var(--color-brand) 92%, white);
+  --color-brand-soft: color-mix(in oklab, var(--color-brand) 22%, var(--color-bg));
+  --color-brand-text: #b0a3ff;
+  /* Текст на brand-soft (выбранный пункт, бейдж, вкладка) */
+  --color-brand-fg: #d6ccff;
+  --color-accent: #f04470;
+  --color-logo-dark: #20106f;
+
+  /* Маскот-слайм (логотип и анимации) */
+  --color-slime: var(--color-brand);
+  --color-slime-shade: color-mix(in oklab, var(--color-brand) 70%, black);
+  --color-slime-line: #0d0b18;
+  /* Слайм «нет сети»: серый */
+  --color-slime-off: #8a96a8;
+  --color-slime-off-shade: #5d6678;
+
+  /* Статусы */
+  --color-success: #38c987;
+  --color-warning: #f2b84b;
+  --color-danger: #f06478;
+  --color-danger-deep: #7a2a38;
+  --color-info: #7cc9e6;
+
+  /* Присутствие */
+  --color-presence-online: var(--color-success);
+  --color-presence-idle: var(--color-warning);
+  --color-presence-dnd: var(--color-accent);
+  --color-presence-offline: #5b586c;
+
+  /* Disabled */
+  --color-disabled-line: #4a4760;
+  --color-disabled-text: #6f6c82;
+
+  /* Шрифт интерфейса: с этапа 4 Onest заменяет Inter из Untitled UI для всего приложения (body использует --font-body). */
+  --font-body: "Onest", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Шрифты */
+  --font-heading: "Unbounded", Arial, sans-serif; /* заголовки, имена. Только 900 */
+  --font-ui: "Onest", Arial, sans-serif; /* интерфейс и сообщения */
+  --font-label: "HoobaMono", ui-monospace, Consolas, monospace; /* подписи, метки, UPPERCASE */
+
+  /* Жёсткие offset-тени без размытия */
+  --shadow-key: 4px 4px 0 var(--color-accent);
+  --shadow-card: 5px 5px 0 var(--color-bg);
+  --shadow-soft: 3px 3px 0 var(--color-brand-soft);
+  --shadow-pop: 0 25px 90px #0007; /* единственная мягкая тень: модалки */
+
+  /* Движение */
+  --ease-step: steps(4, end);
+  --ease-pop: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root {
+  /* Не-Tailwind переменные кита */
+  --ds-press-offset: 4px; /* глубина «клавиши»: hover = 1/2, active = 0 */
+  --ds-hatch: repeating-linear-gradient(135deg, transparent 0 3px, #ffffff12 3px 4px);
+  --ds-focus-ring: none; /* обводка фокуса отключена: все стили кита берут её отсюда */
+  --ds-focus-offset: 5px;
+  --ds-h-sm: 34px;
+  --ds-h-md: 44px;
+  --ds-h-lg: 54px;
+}
+
+/* Браузерная обводка фокуса не нужна нигде: клавиатурный фокус не подсвечиваем. */
+:focus-visible {
+  outline: none;
+}

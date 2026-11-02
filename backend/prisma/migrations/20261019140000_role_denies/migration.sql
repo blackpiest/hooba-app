@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Role" ADD COLUMN "denySendMessages" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "denySpeak" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "denyScreenShare" BOOLEAN NOT NULL DEFAULT false;

@@ -1,0 +1,614 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RegistrationMode {
+  INVITE_ONLY
+  OPEN
+}
+
+enum ChannelType {
+  TEXT
+  VOICE
+  DM
+}
+
+/// Действие, которое канал может ограничить списком ролей (ChannelRoleRule).
+enum ChannelRuleAction {
+  SEND
+  SPEAK
+  STREAM
+  VIEW
+  ATTACH
+  REACT
+}
+
+enum PresencePreference {
+  ONLINE
+  IDLE
+  DND
+  INVISIBLE
+}
+
+enum ModerationAction {
+  BAN
+  KICK
+  WARN
+  ROLE_CHANGE
+  CHANNEL_DELETE
+  INVITE_CREATE
+  INVITE_DELETE
+  INVITE_USED
+  MESSAGE_DELETE
+  USER_INVITES_ENABLE
+  USER_INVITES_DISABLE
+  COSMETIC_GRANT
+  COSMETIC_REVOKE
+  CHALLENGE_PUBLISH
+  CHALLENGE_ARCHIVE
+  COSMETIC_EDIT
+  DISPLAY_NAME_HIDE
+  DISPLAY_NAME_UNHIDE
+  ANNOUNCEMENT_CREATE
+  ANNOUNCEMENT_DELETE
+  EMOJI_CREATE
+  EMOJI_DELETE
+  SERVER_ICON_UPDATE
+  SERVER_ICON_REMOVE
+}
+
+/// Вид косметики (id предмета — из assets/avatars/catalog.json).
+enum CosmeticKind {
+  BADGE
+  TITLE
+  FRAME
+  BACKGROUND
+  CHARACTER
+}
+
+/// Откуда у участника предмет: выдал владелец, заработал испытанием, носил до того, как предмет стал наградой.
+enum CosmeticSource {
+  MANUAL
+  CHALLENGE
+  LEGACY
+}
+
+/// DRAFT — видит только владелец; ACTIVE — идёт, засчитывается; ARCHIVED — закрыто, награды остаются у получивших.
+enum ChallengeStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+/// Вид учитываемой активности (modules/activity). Значение в ActivityHour: MESSAGE — штуки, остальное — минуты.
+enum ActivityKind {
+  MESSAGE
+  VOICE
+  GAME
+  ONLINE
+}
+
+/// STAFF — код, выпущенный владельцем; PERSONAL — один из 3 личных кодов участника (slot 1..3).
+enum InviteKind {
+  STAFF
+  PERSONAL
+}
+
+model ServerSettings {
+  id                 Int              @id @default(1)
+  serverName         String
+  isBootstrapped     Boolean          @default(false)
+  registrationMode   RegistrationMode @default(INVITE_ONLY)
+  /// Шаблоны запрещённых слов (фильтр чата): `слово`, `слово*`, `*слово`, `*слово*`.
+  bannedWords        String[]         @default([])
+  /// Рубильник личных приглашений: false — UI скрыт, неиспользованные PERSONAL-коды не работают (но не отзываются).
+  userInvitesEnabled Boolean          @default(true)
+  /// Часовой пояс сообщества (IANA): по нему испытания считают календарные дни и серии.
+  timezone           String           @default("Europe/Moscow")
+  /// Аватар сервера: случайный ключ файла <UPLOADS_DIR>/server/icon-<iconKey>.webp. null — нет (буква названия).
+  iconKey            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  /// PostgreSQL citext: login and uniqueness ignore letter case. Stored spelling is the one the user chose.
+  username       String    @unique @db.Citext
+  passwordHash   String
+  isActive       Boolean   @default(true)
+  /// Incremented on kick/ban so previously issued access tokens stop working.
+  sessionVersion Int       @default(0)
+  /// Set while the account exists but is not a community member. Cleared on rejoin via invite.
+  kickedAt       DateTime?
+
+  lastSeen           DateTime?
+  /// Account status choice. Public online/idle/dnd/offline is derived from sessions, not stored here.
+  presencePreference PresencePreference @default(ONLINE)
+  /// Отображаемое имя (modules/users/display-name.ts). null — показывать username.
+  displayName        String?
+  /// Staff скрыл имя (displayName стёрт): задать новое нельзя, пока запрет не снимут.
+  displayNameLocked  Boolean            @default(false)
+  /// Когда участник последний раз видел новинки конструктора (modules/profile-news): выданная косметика и испытания новее — «новое».
+  profileSeenAt      DateTime           @default(now())
+  /// Косметика профиля, id из assets/avatars/catalog.json. null — «нет» (буква / цвет бренда / базовая рамка).
+  avatarCharacter    String?
+  avatarBackground   String?
+  avatarFrame        String?
+  /// Закреплённые на карточке значки (id из каталога, до 3, порядок важен). Невыданные отфильтровываются при чтении.
+  pinnedBadges       String[]           @default([])
+  /// Выбранный титул (id из каталога); учитывается, только если выдан (UserTitle).
+  titleId            String?
+  /// Кто пригласил (создатель использованного инвайта). Ставится при создании аккаунта.
+  invitedById        Int?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  roles              UserRole[]
+  invitesCreated     Invite[]              @relation("InviteCreator")
+  invitesUsed        Invite[]              @relation("InviteUser")
+  invitedBy          User?                 @relation("UserInviter", fields: [invitedById], references: [id], onDelete: SetNull)
+  invitees           User[]                @relation("UserInviter")
+  refreshSessions    RefreshSession[]
+  channelsCreated    Channel[]             @relation("ChannelCreatedBy")
+  channelMemberships ChannelMember[]
+  messages           Message[]
+  channelPinsMade    Channel[]             @relation("ChannelPinnedBy")
+  moderationAsActor  ModerationLog[]       @relation("ModerationActor")
+  moderationAsTarget ModerationLog[]       @relation("ModerationTarget")
+  attachments        Attachment[]
+  reportsFiled       UserReport[]          @relation("ReportReporter")
+  reportsReceived    UserReport[]          @relation("ReportTarget")
+  reportsResolved    UserReport[]          @relation("ReportResolver")
+  cosmetics          UserCosmetic[]        @relation("CosmeticOwner")
+  cosmeticsGranted   UserCosmetic[]        @relation("CosmeticGranter")
+  challengesCreated  Challenge[]
+  challengesDone     ChallengeCompletion[]
+  cosmeticTexts      CosmeticText[]
+  customTitles       CustomTitle[]
+  activity           ActivityHour[]
+  announcementsMade  Announcement[]
+  announcementsSeen  AnnouncementRecipient[]
+  emojisCreated      CustomEmoji[]
+  reactions          MessageReaction[]
+  channelUserRules   ChannelUserRule[]
+
+  @@index([invitedById])
+}
+
+/// Почасовая копилка активности для испытаний. hour — начало часа в UTC; scope — `ch:<id>`, `game:<название>` или ''.
+/// Пишется только инкрементом (activity.service.ts), прогресс испытаний считается из сумм.
+model ActivityHour {
+  userId Int
+  hour   DateTime
+  kind   ActivityKind
+  scope  String       @default("")
+  value  Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hour, kind, scope])
+  @@index([userId, kind, hour])
+}
+
+/// Косметика участника сверх того, что открыто всем: выданная владельцем, заработанная испытанием или LEGACY.
+/// Значки ролей и «всё у владельца» сюда не пишутся — они вычисляются (modules/cosmetics/cosmetic-access.ts).
+model UserCosmetic {
+  id          Int            @id @default(autoincrement())
+  userId      Int
+  kind        CosmeticKind
+  itemId      String
+  source      CosmeticSource
+  challengeId Int?
+  grantedById Int?
+  createdAt   DateTime       @default(now())
+  /// Участник нажал на предмет в конструкторе. null у MANUAL/CHALLENGE — метка «Новое» на плитке.
+  seenAt      DateTime?
+
+  user      User       @relation("CosmeticOwner", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy User?      @relation("CosmeticGranter", fields: [grantedById], references: [id], onDelete: SetNull)
+  challenge Challenge? @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, kind, itemId])
+}
+
+/// Правка значка, титула (тексты, скрытие) или любого предмета (витрина/запас — `listed`) владельцем (modules/cosmetics/cosmetic-texts.ts). Побеждает catalog.json:
+/// файл лежит в образе и перезаписывается при обновлении, поэтому правки живут в БД. null в поле — как в каталоге.
+model CosmeticText {
+  kind        CosmeticKind
+  itemId      String
+  /// Значок — название, титул — подпись.
+  name        String?
+  description String?
+  /// achievement | event | reward | role; «role» не меняется ни туда, ни обратно.
+  category    String?
+  /// Надпись у замка. Пустая строка — «без надписи» (null — как в каталоге).
+  hint        String?
+  /// Титул: значок для иконки. Пустая строка — «без иконки» (null — как в каталоге).
+  badge       String?
+  /// Титул каталога скрыт владельцем: пропадает отовсюду, выдачи и выбор в витрине сохраняются до возврата.
+  hidden      Boolean      @default(false)
+  /// Виден в конструкторе тем, у кого его нет (false — «в запасе»); null — как в каталоге. Любой вид косметики.
+  listed      Boolean?
+  updatedById Int?
+  updatedAt   DateTime     @updatedAt
+
+  updatedBy User? @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@id([kind, itemId])
+}
+
+/// Титул, созданный владельцем в админке (modules/cosmetics), — дописывается к титулам catalog.json.
+/// id — `t-` + 8 символов; совпадёт с каталожным — побеждает каталог.
+model CustomTitle {
+  id          String   @id
+  label       String
+  /// id значка каталога, чья иконка рисуется рядом; null — без иконки.
+  badgeId     String?
+  /// false — «в запасе»: в конструкторе только у получивших.
+  listed      Boolean  @default(true)
+  createdById Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+/// Испытание: дерево условий (modules/challenges/conditions) и награды — id косметики из каталога.
+/// startsAt/endsAt — местное время сообщества `YYYY-MM-DDTHH:mm` (ServerSettings.timezone); null — без границы.
+model Challenge {
+  id          Int             @id @default(autoincrement())
+  title       String
+  description String          @default("")
+  status      ChallengeStatus @default(DRAFT)
+  /// `{ op: 'all' | 'any', items: [...] }` — схема в challenge-schema.ts.
+  condition   Json
+  /// `[{ kind: 'badge' | 'title' | 'frame' | 'background' | 'character', id }]`.
+  rewards     Json
+  startsAt    String?
+  endsAt      String?
+  createdById Int?
+  publishedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  createdBy   User?                 @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  completions ChallengeCompletion[]
+  cosmetics   UserCosmetic[]
+
+  @@index([status])
+}
+
+model ChallengeCompletion {
+  challengeId Int
+  userId      Int
+  completedAt DateTime @default(now())
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([challengeId, userId])
+  @@index([userId])
+}
+
+/// Жалоба участника на участника. От А на Б одновременно может быть одна открытая (resolvedAt = null):
+/// частичный уникальный индекс "UserReport_open_unique" создан руками в миграции, Prisma его не выражает.
+model UserReport {
+  id           Int       @id @default(autoincrement())
+  reporterId   Int
+  targetUserId Int
+  reason       String
+  createdAt    DateTime  @default(now())
+  resolvedAt   DateTime?
+  resolvedById Int?
+
+  reporter   User  @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  target     User  @relation("ReportTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  resolvedBy User? @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([reporterId, targetUserId])
+  @@index([resolvedAt, createdAt])
+}
+
+/// Объявление владельца: модалка, которая один раз показывается получателям, начиная с `showAt`.
+model Announcement {
+  id          Int       @id @default(autoincrement())
+  title       String
+  /// Текст: строки `# ` — заголовок, `- ` — пункт, остальное — абзацы; инлайн-разметка как в чате.
+  body        String
+  /// Местное время сообщества `YYYY-MM-DDTHH:mm` (пояс — `ServerSettings.timezone`), как окна испытаний.
+  showAt      String
+  /// Не показывать позже этого момента (тот же формат); null — пока не прочитают.
+  expiresAt   String?
+  /// Аудитория: обе пустые — все; иначе объединение ролей и участников.
+  roleIds     Int[]     @default([])
+  userIds     Int[]     @default([])
+  createdById Int?
+  /// Когда список получателей зафиксирован (наступил `showAt`). После этого правка запрещена.
+  deliveredAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  createdBy  User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  recipients AnnouncementRecipient[]
+
+  @@index([deliveredAt, showAt])
+}
+
+model AnnouncementRecipient {
+  announcementId Int
+  userId         Int
+  seenAt         DateTime?
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([announcementId, userId])
+  @@index([userId, seenAt])
+}
+
+model ModerationLog {
+  id           Int              @id @default(autoincrement())
+  actorId      Int
+  targetUserId Int?
+  action       ModerationAction
+  reason       String?
+  channelId    Int?
+  createdAt    DateTime         @default(now())
+
+  actor  User  @relation("ModerationActor", fields: [actorId], references: [id], onDelete: Restrict)
+  target User? @relation("ModerationTarget", fields: [targetUserId], references: [id], onDelete: Restrict)
+
+  @@index([createdAt])
+}
+
+model RefreshSession {
+  id           Int                  @id @default(autoincrement())
+  userId       Int
+  tokenHash    String               @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  revokeReason RefreshRevokeReason?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum RefreshRevokeReason {
+  ROTATED // заменена при /auth/refresh: повтор после grace считается кражей
+  LOGOUT
+  FORCED // бан, кик, детект кражи, отключённый аккаунт
+}
+
+model Role {
+  id               Int     @id @default(autoincrement())
+  /// Неизменный ключ системной роли (OWNER | ADMIN | MEMBER); null у кастомных. Проверки прав — только по нему.
+  key              String? @unique
+  /// Отображаемое имя, редактируется.
+  name             String  @unique
+  isSystem         Boolean @default(false)
+  /// Цвет ника/бейджа `#rrggbb`; null — без цвета. Рисует клиент.
+  color            String?
+  /// Приоритет роли (по возрастанию — выше в списке). Двигаются все, кроме MEMBER: она всегда снизу.
+  position         Int     @default(0)
+  /// Показывать участников с ролью отдельной группой в списке «Онлайн». У MEMBER всегда false.
+  hoist            Boolean @default(false)
+  /// Запреты роли («запрет побеждает»: хватает одной роли с запретом). На OWNER/ADMIN не действуют.
+  denySendMessages Boolean @default(false)
+  denySpeak        Boolean @default(false)
+  denyScreenShare  Boolean @default(false)
+  denyAttachFiles  Boolean @default(false)
+  /// Значок роли (id из каталога, категория `role`): есть у всех, у кого есть роль. null — без значка.
+  badgeId          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users        UserRole[]
+  channelRules ChannelRoleRule[]
+}
+
+model UserRole {
+  id     Int @id @default(autoincrement())
+  userId Int
+  roleId Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, roleId])
+}
+
+model Invite {
+  id          Int        @id @default(autoincrement())
+  code        String     @unique
+  createdById Int
+  usedById    Int?
+  expiresAt   DateTime?
+  usedAt      DateTime?
+  isRevoked   Boolean    @default(false)
+  kind        InviteKind @default(STAFF)
+  /// 1..3 у PERSONAL, null у STAFF.
+  slot        Int?
+  createdAt   DateTime   @default(now())
+
+  createdBy User  @relation("InviteCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  usedBy    User? @relation("InviteUser", fields: [usedById], references: [id], onDelete: SetNull)
+
+  @@unique([createdById, kind, slot])
+}
+
+model Channel {
+  id               Int         @id @default(autoincrement())
+  name             String
+  channelType      ChannelType
+  position         Int
+  isPrivate        Boolean     @default(false)
+  /// true — действие доступно только ролям из ChannelRoleRule с тем же action (и staff). false — всем.
+  sendRestricted   Boolean     @default(false)
+  speakRestricted  Boolean     @default(false)
+  streamRestricted Boolean     @default(false)
+  attachRestricted Boolean     @default(false)
+  reactRestricted  Boolean     @default(false)
+  isDeleted        Boolean     @default(false)
+  deletedAt        DateTime?
+
+  createdById Int
+  createdBy   User @relation("ChannelCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  /// Закреплённое сообщение (одно на канал). Закрепляет/открепляет только staff; при удалении сообщения снимается.
+  pinnedMessageId Int?      @unique
+  pinnedMessage   Message?  @relation("ChannelPinnedMessage", fields: [pinnedMessageId], references: [id], onDelete: SetNull)
+  pinnedById      Int?
+  pinnedBy        User?     @relation("ChannelPinnedBy", fields: [pinnedById], references: [id], onDelete: SetNull)
+  pinnedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members     ChannelMember[]
+  messages    Message[]
+  roleRules   ChannelRoleRule[]
+  userRules   ChannelUserRule[]
+  attachments Attachment[]
+
+  @@index([channelType, position])
+}
+
+model Message {
+  id        Int    @id @default(autoincrement())
+  channelId Int
+  authorId  Int
+  content   String
+
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  channel     Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  attachments Attachment[]
+  reactions   MessageReaction[]
+  pinnedIn    Channel?     @relation("ChannelPinnedMessage")
+
+  @@index([channelId, createdAt])
+  @@index([authorId])
+}
+
+/// Картинка к сообщению (modules/attachments). Файлы на диске: <UPLOADS_DIR>/<id>/{full,thumb}.webp —
+/// всегда перекодированы сервером, оригинал не хранится. messageId = null — загружено, но ещё не отправлено.
+model Attachment {
+  id           String    @id @db.Uuid
+  uploaderId   Int
+  channelId    Int
+  messageId    Int?
+  /// Имя файла у пользователя (санитизировано) — только для показа/скачивания.
+  originalName String
+  width        Int
+  height       Int
+  /// Суммарный размер full + thumb на диске — для квоты хранилища.
+  sizeBytes    Int
+  /// Порядок в сообщении.
+  position     Int       @default(0)
+  createdAt    DateTime  @default(now())
+  /// Файлы удалены (очистка хранилища или удаление сообщения); строка остаётся, чтобы показать заглушку.
+  purgedAt     DateTime?
+
+  uploader User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  channel  Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  message  Message? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([messageId])
+  @@index([createdAt])
+  @@index([uploaderId, createdAt])
+}
+
+model ChannelMember {
+  id        Int      @id @default(autoincrement())
+  channelId Int
+  userId    Int
+  joinedAt  DateTime @default(now())
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+  @@index([userId])
+}
+
+/// Роли, которым канал открывает действие, когда оно ограничено (Channel.*Restricted).
+model ChannelRoleRule {
+  id        Int               @id @default(autoincrement())
+  channelId Int
+  roleId    Int
+  action    ChannelRuleAction
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  role    Role    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, action, roleId])
+  @@index([roleId])
+}
+
+/// Участники, которым канал открывает действие, когда оно ограничено (Channel.*Restricted) — в дополнение к ChannelRoleRule.
+model ChannelUserRule {
+  id        Int               @id @default(autoincrement())
+  channelId Int
+  userId    Int
+  action    ChannelRuleAction
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, action, userId])
+  @@index([userId])
+}
+
+/// Кастомный смайлик сообщества (modules/emojis). Загружает только OWNER, не больше 32.
+/// Файл на диске: <UPLOADS_DIR>/emoji/<id>.webp — всегда перекодирован сервером.
+model CustomEmoji {
+  id          Int      @id @default(autoincrement())
+  /// Имя для токена `<:name:id>` и подсказок; ^[a-z0-9_]{2,32}$.
+  name        String   @unique
+  width       Int
+  height      Int
+  sizeBytes   Int
+  createdById Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  reactions MessageReaction[]
+}
+
+/// Реакция участника на сообщение. emoji — unicode-эмодзи или `c:<id>` для кастомного смайлика.
+model MessageReaction {
+  id            Int      @id @default(autoincrement())
+  messageId     Int
+  userId        Int
+  emoji         String
+  customEmojiId Int?
+  createdAt     DateTime @default(now())
+
+  message     Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customEmoji CustomEmoji? @relation(fields: [customEmojiId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([customEmojiId])
+}

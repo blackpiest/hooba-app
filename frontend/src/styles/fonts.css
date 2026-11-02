@@ -1,0 +1,25 @@
+/* Шрифты дизайн-системы Hooba. Подмножество Latin + Cyrillic, woff2.
+   Onest — вариативный (wght 100–900, лицензия OFL, Google Fonts). Unbounded — только 900, Mono — только 400. */
+@font-face {
+  font-family: "Unbounded";
+  src: url("../assets/fonts/unbounded.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Onest";
+  src: url("../assets/fonts/onest.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HoobaMono";
+  src: url("../assets/fonts/mono.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

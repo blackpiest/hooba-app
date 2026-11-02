@@ -1,0 +1,53 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@10.21.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "ds:audit": "node scripts/ds-audit.mjs"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@fluidinference/fluidvad": "^0.2.0",
+    "@react-types/shared": "^3.34.0",
+    "emojibase-data": "^17.0.0",
+    "mediasoup-client": "^3.20.0",
+    "react": "^19.2.5",
+    "react-aria": "^3.48.0",
+    "react-aria-components": "^1.17.0",
+    "react-dom": "^19.2.5",
+    "react-router-dom": "^7.14.2",
+    "react-stately": "^3.46.0",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss-react-aria-components": "^2.1.0",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.2.4",
+    "@types/node": "^24.12.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.5.0",
+    "tailwindcss": "^4.2.4",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.58.2",
+    "vite": "^8.0.10",
+    "vitest": "^5.0.4"
+  }
+}

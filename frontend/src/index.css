@@ -1,0 +1,143 @@
+@import "tailwindcss";
+@import "./styles/fonts.css";
+@import "./styles/tokens.css";
+@import "./styles/ds-utilities.css";
+
+@plugin 'tailwindcss-react-aria-components';
+
+/* Сенсорный ввод (телефон, планшет): раскладку определяет ширина (max-md:), поведение — устройство ввода.
+   Мышь на любой ширине работает как на десктопе. */
+@custom-variant touch (@media (hover: none) and (pointer: coarse));
+
+/* Вырез и полоска «домой» (viewport-fit=cover в index.html). На десктопе env() = 0. */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@utility px-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: var(--color-fg);
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"],
+.ds-selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.ds-selectable button,
+.ds-selectable a {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Safari 26 на iPhone: fixed-слой обрывается над плавающей панелью браузера, под ней — голый фон страницы.
+   Декоративный фон (вход, загрузка) тянем до низа экрана; интерфейс — нельзя, его закроет панель. Только мобильная ширина. */
+@media (max-width: 767.98px) {
+  .ds-fill-screen {
+    bottom: auto !important;
+    height: calc(100lvh + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* Тач: без серой вспышки при нажатии; поля не мельче 16px, иначе iOS увеличивает страницу при фокусе. */
+@media (hover: none) and (pointer: coarse) {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    /* Без «резиновой» прокрутки страницы и pull-to-refresh: прокручиваются только списки внутри. */
+    overscroll-behavior: none;
+    /* Без задержки и зума по двойному тапу. */
+    touch-action: manipulation;
+  }
+
+  input,
+  textarea,
+  select,
+  [contenteditable="true"] {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
+img,
+svg {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* Скроллбары: тонкие, ползунок виден только при наведении на прокручиваемую область (и только если есть что прокручивать). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*:hover {
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+/* Окно Electron: верхняя полоса прозрачная, кнопки лежат на фоне приложения. */
+html.ns-desktop {
+  --ds-titlebar-h: 28px;
+}
+
+html.ns-desktop::before {
+  content: "";
+  position: fixed;
+  z-index: 40;
+  top: 0;
+  left: 0;
+  width: calc(100% - 126px);
+  height: var(--ds-titlebar-h);
+  -webkit-app-region: drag;
+}
+
+html.ns-desktop[data-platform="darwin"]::before {
+  left: 78px;
+  width: calc(100% - 78px);
+}
+
+html.ns-desktop body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+html.ns-desktop #root,
+html.ns-desktop #root > .min-h-screen,
+html.ns-desktop #root > .min-h-dvh {
+  height: 100%;
+  min-height: 0;
+}
+
+html.ns-desktop #root {
+  box-sizing: border-box;
+  padding-top: var(--ds-titlebar-h);
+}
+
+html.ns-desktop [data-block="app-shell-layout"],
+html.ns-desktop [data-block="auth-layout"],
+html.ns-desktop #root main {
+  height: 100%;
+  min-height: 0;
+}

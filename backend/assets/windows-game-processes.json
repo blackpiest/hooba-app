@@ -1,0 +1,1323 @@
+{
+  "schema_version": 1,
+  "purpose": "Hooba Windows game activity detection",
+  "matching_rules": [
+    "Compare process executable names case-insensitively.",
+    "Prefer the actual game process; launcher and anti-cheat processes are not reliable game-active signals.",
+    "Some entries are marked verify because executable names can change by build, store, or launcher.",
+    "Do not infer a game from generic processes such as javaw.exe without checking command line or install path.",
+    "An executable can be shared by multiple games; resolve ambiguous names using full executable path or Steam app ID.",
+    "The server skips a process when its title contains \"do not\", \"ambiguous\", \"not a reliable\", \"not the match\", \"not ideal for detection\", or the word \"launcher\".",
+    "A trailing parenthetical note (verify, possible, variant, and similar) is omitted from the shown title. A name such as DOOM (2016) is kept."
+  ],
+  "processes": {
+    "7DaysToDie.exe": {
+      "title": "7 Days to Die"
+    },
+    "7DaysToDie_EAC.exe": {
+      "title": "7 Days to Die"
+    },
+    "AC2-Win64-Shipping.exe": {
+      "title": "Assetto Corsa Competizione (verify build)"
+    },
+    "ACMirage.exe": {
+      "title": "Assassin's Creed Mirage"
+    },
+    "acs.exe": {
+      "title": "Assetto Corsa"
+    },
+    "ACShadows.exe": {
+      "title": "Assassin's Creed Shadows (verify installed build)"
+    },
+    "ACValhalla.exe": {
+      "title": "Assassin's Creed Valhalla"
+    },
+    "Age of Empires IV.exe": {
+      "title": "Age of Empires IV (verify build)"
+    },
+    "AlanWake.exe": {
+      "title": "Alan Wake"
+    },
+    "AlanWake2.exe": {
+      "title": "Alan Wake 2 (verify current build)"
+    },
+    "Albion-Online.exe": {
+      "title": "Albion Online"
+    },
+    "Among Us.exe": {
+      "title": "Among Us"
+    },
+    "AmongUs.exe": {
+      "title": "Among Us"
+    },
+    "amtrucks.exe": {
+      "title": "American Truck Simulator"
+    },
+    "AoE2DE_s.exe": {
+      "title": "Age of Empires II: Definitive Edition"
+    },
+    "Apex Legends.exe": {
+      "title": "Apex Legends"
+    },
+    "AtomicHeart.exe": {
+      "title": "Atomic Heart"
+    },
+    "Back4Blood.exe": {
+      "title": "Back 4 Blood"
+    },
+    "Balatro.exe": {
+      "title": "Balatro"
+    },
+    "Battle.net.exe": {
+      "title": "Battle.net launcher (DO NOT use for game detection)"
+    },
+    "BeamNG.drive.x64.exe": {
+      "title": "BeamNG.drive"
+    },
+    "Beat Saber.exe": {
+      "title": "Beat Saber"
+    },
+    "bg3.exe": {
+      "title": "Baldur's Gate 3"
+    },
+    "BindingOfIsaac.exe": {
+      "title": "The Binding of Isaac: Rebirth"
+    },
+    "BlackDesert64.exe": {
+      "title": "Black Desert Online"
+    },
+    "BlackMesa.exe": {
+      "title": "Black Mesa"
+    },
+    "BlackMythWukong.exe": {
+      "title": "Black Myth: Wukong"
+    },
+    "BONELAB.exe": {
+      "title": "BONELAB (verify build)"
+    },
+    "Brawlhalla.exe": {
+      "title": "Brawlhalla"
+    },
+    "Celeste.exe": {
+      "title": "Celeste"
+    },
+    "Cities.exe": {
+      "title": "Cities: Skylines"
+    },
+    "Cities2.exe": {
+      "title": "Cities: Skylines II"
+    },
+    "Civ6.exe": {
+      "title": "Sid Meier's Civilization VI"
+    },
+    "Civ7.exe": {
+      "title": "Sid Meier's Civilization VII (verify build)"
+    },
+    "CK3.exe": {
+      "title": "Crusader Kings III"
+    },
+    "Content Warning.exe": {
+      "title": "Content Warning"
+    },
+    "Control_DX11.exe": {
+      "title": "Control"
+    },
+    "Control_DX12.exe": {
+      "title": "Control"
+    },
+    "CoreKeeper.exe": {
+      "title": "Core Keeper"
+    },
+    "cs2.exe": {
+      "title": "Counter-Strike 2"
+    },
+    "Cuphead.exe": {
+      "title": "Cuphead"
+    },
+    "Cyberpunk2077.exe": {
+      "title": "Cyberpunk 2077"
+    },
+    "DarkSoulsIII.exe": {
+      "title": "Dark Souls III"
+    },
+    "DarkSoulsRemastered.exe": {
+      "title": "Dark Souls Remastered"
+    },
+    "Darktide.exe": {
+      "title": "Warhammer 40,000: Darktide"
+    },
+    "DayZ_x64.exe": {
+      "title": "DayZ"
+    },
+    "DayZDiag_x64.exe": {
+      "title": "DayZ (diagnostic build)"
+    },
+    "DCS.exe": {
+      "title": "DCS World"
+    },
+    "DD2.exe": {
+      "title": "Dragon's Dogma 2 (verify build)"
+    },
+    "DeadByDaylight-Win64-Shipping.exe": {
+      "title": "Dead by Daylight"
+    },
+    "DeadCells.exe": {
+      "title": "Dead Cells"
+    },
+    "Deadlock.exe": {
+      "title": "Deadlock"
+    },
+    "DeadSpace.exe": {
+      "title": "Dead Space Remake"
+    },
+    "Deep Rock Galactic.exe": {
+      "title": "Deep Rock Galactic"
+    },
+    "DeltaForce.exe": {
+      "title": "Delta Force (possible build-dependent name; verify)"
+    },
+    "DeltaForceClient-Win64-Shipping.exe": {
+      "title": "Delta Force (verify current build)"
+    },
+    "DELTARUNE.exe": {
+      "title": "Deltarune"
+    },
+    "Destiny2.exe": {
+      "title": "Destiny 2"
+    },
+    "destiny2.exe": {
+      "title": "Destiny 2"
+    },
+    "Diablo IV Launcher.exe": {
+      "title": "Diablo IV launcher (not a reliable game-active signal)"
+    },
+    "Diablo IV.exe": {
+      "title": "Diablo IV"
+    },
+    "Discovery.exe": {
+      "title": "THE FINALS"
+    },
+    "Divinity Original Sin 2.exe": {
+      "title": "Divinity: Original Sin 2"
+    },
+    "DOOMEternalx64.exe": {
+      "title": "DOOM Eternal"
+    },
+    "DOOMEternalx64vk.exe": {
+      "title": "DOOM Eternal"
+    },
+    "DOOMx64.exe": {
+      "title": "DOOM (2016)"
+    },
+    "dota2.exe": {
+      "title": "Dota 2"
+    },
+    "DragonAgeInquisition.exe": {
+      "title": "Dragon Age: Inquisition"
+    },
+    "DragonAgeTheVeilguard.exe": {
+      "title": "Dragon Age: The Veilguard (verify build)"
+    },
+    "DSPGAME.exe": {
+      "title": "Dyson Sphere Program"
+    },
+    "EA app.exe": {
+      "title": "EA app launcher (DO NOT use for game detection)"
+    },
+    "EldenRing.exe": {
+      "title": "Elden Ring"
+    },
+    "Enshrouded.exe": {
+      "title": "Enshrouded"
+    },
+    "EnterTheGungeon.exe": {
+      "title": "Enter the Gungeon"
+    },
+    "EpicGamesLauncher.exe": {
+      "title": "Epic Games Launcher (DO NOT use for game detection)"
+    },
+    "EscapeFromTarkov.exe": {
+      "title": "Escape from Tarkov"
+    },
+    "EscapeFromTarkov_BE.exe": {
+      "title": "Escape from Tarkov"
+    },
+    "ESO.exe": {
+      "title": "The Elder Scrolls Online"
+    },
+    "eu4.exe": {
+      "title": "Europa Universalis IV"
+    },
+    "eurotrucks2.exe": {
+      "title": "Euro Truck Simulator 2"
+    },
+    "F1_24.exe": {
+      "title": "F1 24 (not in primary list; process varies by year)"
+    },
+    "F1_25.exe": {
+      "title": "F1 25 (not in primary list; process varies by year)"
+    },
+    "F1Manager2024.exe": {
+      "title": "F1 Manager 2024 (verify build)"
+    },
+    "F1Manager24.exe": {
+      "title": "F1 Manager 2024 (not in primary list; process varies by year)"
+    },
+    "Factorio.exe": {
+      "title": "Factorio"
+    },
+    "FactoryGame.exe": {
+      "title": "Satisfactory"
+    },
+    "FallGuys_client.exe": {
+      "title": "Fall Guys"
+    },
+    "FallGuys_client_game.exe": {
+      "title": "Fall Guys"
+    },
+    "Fallout4.exe": {
+      "title": "Fallout 4"
+    },
+    "FalloutNV.exe": {
+      "title": "Fallout: New Vegas"
+    },
+    "FarCry3.exe": {
+      "title": "Far Cry 3"
+    },
+    "FarCry4.exe": {
+      "title": "Far Cry 4"
+    },
+    "FarCry5.exe": {
+      "title": "Far Cry 5"
+    },
+    "FarCry6.exe": {
+      "title": "Far Cry 6"
+    },
+    "FarmingSimulator2022Game.exe": {
+      "title": "Farming Simulator 22"
+    },
+    "FarmingSimulator2025Game.exe": {
+      "title": "Farming Simulator 25"
+    },
+    "ffxiv.exe": {
+      "title": "Final Fantasy XIV (legacy/variant)"
+    },
+    "ffxiv_dx11.exe": {
+      "title": "Final Fantasy XIV"
+    },
+    "FlightSimulator.exe": {
+      "title": "Microsoft Flight Simulator"
+    },
+    "FlightSimulator2024.exe": {
+      "title": "Microsoft Flight Simulator 2024 (verify build)"
+    },
+    "FortniteClient-Win64-Shipping.exe": {
+      "title": "Fortnite"
+    },
+    "FortniteClient-Win64-Shipping_EAC_EOS.exe": {
+      "title": "Fortnite (anti-cheat variant; verify)"
+    },
+    "ForzaHorizon5.exe": {
+      "title": "Forza Horizon 5"
+    },
+    "ForzaMotorsport.exe": {
+      "title": "Forza Motorsport"
+    },
+    "Frostpunk.exe": {
+      "title": "Frostpunk"
+    },
+    "Frostpunk2.exe": {
+      "title": "Frostpunk 2 (verify build)"
+    },
+    "FSD.exe": {
+      "title": "Deep Rock Galactic"
+    },
+    "GalaxyClient.exe": {
+      "title": "GOG Galaxy launcher (DO NOT use for game detection)"
+    },
+    "Gang Beasts.exe": {
+      "title": "Gang Beasts"
+    },
+    "GenshinImpact.exe": {
+      "title": "Genshin Impact"
+    },
+    "GGST-Win64-Shipping.exe": {
+      "title": "Guilty Gear -Strive-"
+    },
+    "Goose Goose Duck.exe": {
+      "title": "Goose Goose Duck"
+    },
+    "Grim Dawn.exe": {
+      "title": "Grim Dawn"
+    },
+    "Grounded.exe": {
+      "title": "Grounded"
+    },
+    "Grounded2.exe": {
+      "title": "Grounded 2 (verify build)"
+    },
+    "GTA5.exe": {
+      "title": "Grand Theft Auto V"
+    },
+    "gta5.exe": {
+      "title": "Grand Theft Auto V"
+    },
+    "GTFO.exe": {
+      "title": "GTFO"
+    },
+    "Gw2-64.exe": {
+      "title": "Guild Wars 2"
+    },
+    "Hades.exe": {
+      "title": "Hades"
+    },
+    "Hades2.exe": {
+      "title": "Hades II (verify build)"
+    },
+    "Hearthstone.exe": {
+      "title": "Hearthstone"
+    },
+    "Helldivers2.exe": {
+      "title": "HELLDIVERS 2 (verify actual executable on installed build)"
+    },
+    "helldivers2.exe": {
+      "title": "HELLDIVERS 2 (possible process-name variant; verify)"
+    },
+    "hl.exe": {
+      "title": "Half-Life"
+    },
+    "hl2.exe": {
+      "title": "Half-Life 2 / Garry's Mod / other Source games (ambiguous; use install path or Steam app ID)"
+    },
+    "hoi4.exe": {
+      "title": "Hearts of Iron IV"
+    },
+    "Hollow Knight Silksong.exe": {
+      "title": "Hollow Knight: Silksong (verify actual process name)"
+    },
+    "Hollow Knight.exe": {
+      "title": "Hollow Knight"
+    },
+    "HouseFlipper2.exe": {
+      "title": "House Flipper 2"
+    },
+    "Human.exe": {
+      "title": "Human: Fall Flat (verify build)"
+    },
+    "IL-2.exe": {
+      "title": "IL-2 Sturmovik: Great Battles (verify build)"
+    },
+    "IndianaJones.exe": {
+      "title": "Indiana Jones and the Great Circle (verify build)"
+    },
+    "Inscryption.exe": {
+      "title": "Inscryption"
+    },
+    "Insurgency.exe": {
+      "title": "Insurgency"
+    },
+    "InsurgencyClient-Win64-Shipping.exe": {
+      "title": "Insurgency: Sandstorm"
+    },
+    "IntoTheRadius.exe": {
+      "title": "Into the Radius (verify build)"
+    },
+    "Isaac-ng.exe": {
+      "title": "The Binding of Isaac: Rebirth"
+    },
+    "Minecraft.exe": {
+      "title": "Minecraft"
+    },
+    "KillingFloor.exe": {
+      "title": "Killing Floor"
+    },
+    "KillingFloor2.exe": {
+      "title": "Killing Floor 2"
+    },
+    "Last Epoch.exe": {
+      "title": "Last Epoch"
+    },
+    "League of Legends.exe": {
+      "title": "League of Legends"
+    },
+    "LeagueClient.exe": {
+      "title": "League of Legends (launcher; do not use as game-active signal alone)"
+    },
+    "LeagueClientUx.exe": {
+      "title": "League of Legends client (not the match process)"
+    },
+    "Left4Dead2.exe": {
+      "title": "Left 4 Dead 2"
+    },
+    "Lethal Company.exe": {
+      "title": "Lethal Company"
+    },
+    "LiesofP-Win64-Shipping.exe": {
+      "title": "Lies of P"
+    },
+    "LOSTARK.exe": {
+      "title": "Lost Ark"
+    },
+    "Mafia2.exe": {
+      "title": "Mafia II"
+    },
+    "Mafia3DefinitiveEdition.exe": {
+      "title": "Mafia III: Definitive Edition"
+    },
+    "MafiaDefinitiveEdition.exe": {
+      "title": "Mafia: Definitive Edition"
+    },
+    "ManorLords.exe": {
+      "title": "Manor Lords"
+    },
+    "MarvelRivals.exe": {
+      "title": "Marvel Rivals (possible build-dependent name; verify)"
+    },
+    "MarvelRivals_Launcher.exe": {
+      "title": "Marvel Rivals (launcher; verify actual game process for current build)"
+    },
+    "MarvelSnap.exe": {
+      "title": "Marvel Snap"
+    },
+    "MassEffect.exe": {
+      "title": "Mass Effect Legendary Edition (varies by game in trilogy)"
+    },
+    "masterduel.exe": {
+      "title": "Yu-Gi-Oh! Master Duel"
+    },
+    "MetroExodus.exe": {
+      "title": "Metro Exodus"
+    },
+    "Minecraft.Windows.exe": {
+      "title": "Minecraft Bedrock Edition"
+    },
+    "MinecraftDungeons.exe": {
+      "title": "Minecraft Dungeons"
+    },
+    "MinecraftLauncher.exe": {
+      "title": "Minecraft Launcher (not a reliable game-active signal)"
+    },
+    "MK12.exe": {
+      "title": "Mortal Kombat 1 (verify build)"
+    },
+    "MonsterHunterRise.exe": {
+      "title": "Monster Hunter Rise"
+    },
+    "MonsterHunterWilds.exe": {
+      "title": "Monster Hunter Wilds (verify build)"
+    },
+    "MonsterHunterWorld.exe": {
+      "title": "Monster Hunter: World"
+    },
+    "MTGA.exe": {
+      "title": "Magic: The Gathering Arena"
+    },
+    "NBA2K24.exe": {
+      "title": "NBA 2K24 (not in primary list; process varies by year)"
+    },
+    "NeedForSpeedUnbound.exe": {
+      "title": "Need for Speed Unbound"
+    },
+    "NewWorld.exe": {
+      "title": "New World: Aeternum (verify build)"
+    },
+    "NFSHeat.exe": {
+      "title": "Need for Speed Heat"
+    },
+    "nioh.exe": {
+      "title": "Nioh"
+    },
+    "Nioh2.exe": {
+      "title": "Nioh 2"
+    },
+    "Noita.exe": {
+      "title": "Noita"
+    },
+    "Oblivion.exe": {
+      "title": "The Elder Scrolls IV: Oblivion"
+    },
+    "OblivionRemastered.exe": {
+      "title": "The Elder Scrolls IV: Oblivion Remastered (verify build)"
+    },
+    "OMORI.exe": {
+      "title": "OMORI"
+    },
+    "ori.exe": {
+      "title": "Ori and the Blind Forest"
+    },
+    "oriwotw.exe": {
+      "title": "Ori and the Will of the Wisps"
+    },
+    "OutlastTrials.exe": {
+      "title": "The Outlast Trials"
+    },
+    "Overcooked2.exe": {
+      "title": "Overcooked! 2"
+    },
+    "Overwatch.exe": {
+      "title": "Overwatch 2"
+    },
+    "OxygenNotIncluded.exe": {
+      "title": "Oxygen Not Included"
+    },
+    "Paladins.exe": {
+      "title": "Paladins"
+    },
+    "Palworld.exe": {
+      "title": "Palworld"
+    },
+    "PartyAnimals.exe": {
+      "title": "Party Animals"
+    },
+    "PathOfExile.exe": {
+      "title": "Path of Exile"
+    },
+    "PathOfExile2.exe": {
+      "title": "Path of Exile 2 (verify build)"
+    },
+    "PathOfExile_x64Steam.exe": {
+      "title": "Path of Exile"
+    },
+    "pavlov-win64-shipping.exe": {
+      "title": "Pavlov VR"
+    },
+    "PAYDAY2_win32_release.exe": {
+      "title": "PAYDAY 2"
+    },
+    "payday2_win32_release.exe": {
+      "title": "PAYDAY 2"
+    },
+    "payday3.exe": {
+      "title": "PAYDAY 3 (verify installed build)"
+    },
+    "Phasmophobia.exe": {
+      "title": "Phasmophobia"
+    },
+    "PlanetCoaster2.exe": {
+      "title": "Planet Coaster 2 (verify build)"
+    },
+    "PlanetZoo.exe": {
+      "title": "Planet Zoo"
+    },
+    "PlateUp.exe": {
+      "title": "PlateUp!"
+    },
+    "PlayGTAV.exe": {
+      "title": "Grand Theft Auto V (launcher; not ideal for detection)"
+    },
+    "portal2.exe": {
+      "title": "Portal 2"
+    },
+    "PowerWashSimulator.exe": {
+      "title": "PowerWash Simulator"
+    },
+    "ProjectZomboid.exe": {
+      "title": "Project Zomboid"
+    },
+    "ProjectZomboid64.exe": {
+      "title": "Project Zomboid"
+    },
+    "PSO2.exe": {
+      "title": "Phantasy Star Online 2"
+    },
+    "pso2.exe": {
+      "title": "Phantasy Star Online 2"
+    },
+    "PummelParty.exe": {
+      "title": "Pummel Party"
+    },
+    "r5apex.exe": {
+      "title": "Apex Legends"
+    },
+    "Raft.exe": {
+      "title": "Raft"
+    },
+    "RainbowSix.exe": {
+      "title": "Tom Clancy's Rainbow Six Siege"
+    },
+    "RDR2.exe": {
+      "title": "Red Dead Redemption 2"
+    },
+    "re2.exe": {
+      "title": "Resident Evil 2 Remake"
+    },
+    "re4.exe": {
+      "title": "Resident Evil 4 Remake"
+    },
+    "re4demo.exe": {
+      "title": "Resident Evil 4 Remake demo"
+    },
+    "re7.exe": {
+      "title": "Resident Evil 7: Biohazard"
+    },
+    "re8.exe": {
+      "title": "Resident Evil Village"
+    },
+    "ReadyOrNot-Win64-Shipping.exe": {
+      "title": "Ready or Not"
+    },
+    "RecRoom.exe": {
+      "title": "Rec Room"
+    },
+    "REDlauncher.exe": {
+      "title": "The Witcher 3 / Cyberpunk 2077 launcher (not a reliable game-active signal)"
+    },
+    "RelicCardinal.exe": {
+      "title": "Age of Empires IV (commonly reported; verify current build)"
+    },
+    "REPO.exe": {
+      "title": "R.E.P.O. (verify capitalization/build)"
+    },
+    "RimWorldWin.exe": {
+      "title": "RimWorld"
+    },
+    "RimWorldWin64.exe": {
+      "title": "RimWorld"
+    },
+    "RiotClientServices.exe": {
+      "title": "Riot Client service (DO NOT use for game detection)"
+    },
+    "Risk of Rain 2.exe": {
+      "title": "Risk of Rain 2"
+    },
+    "RobloxPlayerBeta.exe": {
+      "title": "Roblox"
+    },
+    "RobloxPlayerLauncher.exe": {
+      "title": "Roblox launcher (not a reliable game-active signal)"
+    },
+    "RocketLeague.exe": {
+      "title": "Rocket League"
+    },
+    "rs2client.exe": {
+      "title": "Old School RuneScape (client variant; verify)"
+    },
+    "RuneScape.exe": {
+      "title": "RuneScape"
+    },
+    "Rust.exe": {
+      "title": "Rust (possible build-dependent name)"
+    },
+    "RustClient.exe": {
+      "title": "Rust"
+    },
+    "SC2_x64.exe": {
+      "title": "StarCraft II"
+    },
+    "Schedule I.exe": {
+      "title": "Schedule I (verify exact process name)"
+    },
+    "SCUM.exe": {
+      "title": "SCUM"
+    },
+    "sekiro.exe": {
+      "title": "Sekiro: Shadows Die Twice"
+    },
+    "Shapez 2.exe": {
+      "title": "shapez 2 (verify actual executable)"
+    },
+    "SHProto.exe": {
+      "title": "Silent Hill 2 Remake (verify build)"
+    },
+    "SkyrimSE.exe": {
+      "title": "The Elder Scrolls V: Skyrim Special Edition"
+    },
+    "SlayTheSpire.exe": {
+      "title": "Slay the Spire"
+    },
+    "SleepingDogs.exe": {
+      "title": "Sleeping Dogs"
+    },
+    "SnowRunner.exe": {
+      "title": "SnowRunner"
+    },
+    "SonsOfTheForest.exe": {
+      "title": "Sons of the Forest"
+    },
+    "SquadGame.exe": {
+      "title": "Squad"
+    },
+    "Stalker2.exe": {
+      "title": "S.T.A.L.K.E.R. 2: Heart of Chornobyl (verify build)"
+    },
+    "StarCitizen.exe": {
+      "title": "Star Citizen"
+    },
+    "Stardew Valley.exe": {
+      "title": "Stardew Valley"
+    },
+    "StardewValley.exe": {
+      "title": "Stardew Valley"
+    },
+    "Starfield.exe": {
+      "title": "Starfield"
+    },
+    "StarRail.exe": {
+      "title": "Honkai: Star Rail"
+    },
+    "StarWarsJediFallenOrder.exe": {
+      "title": "Star Wars Jedi: Fallen Order"
+    },
+    "StarWarsOldRepublic.exe": {
+      "title": "Star Wars: The Old Republic (verify build)"
+    },
+    "steam.exe": {
+      "title": "Steam client (DO NOT use for game detection)"
+    },
+    "StreetFighter6.exe": {
+      "title": "Street Fighter 6"
+    },
+    "Subnautica.exe": {
+      "title": "Subnautica"
+    },
+    "SubnauticaZero.exe": {
+      "title": "Subnautica: Below Zero (verify build)"
+    },
+    "SuperAutoPets.exe": {
+      "title": "Super Auto Pets"
+    },
+    "Supermarket Simulator.exe": {
+      "title": "Supermarket Simulator"
+    },
+    "SwGame-Win64-Shipping.exe": {
+      "title": "Star Wars Jedi: Survivor (verify; Unreal-based builds may use this name)"
+    },
+    "Tabletop Simulator.exe": {
+      "title": "Tabletop Simulator"
+    },
+    "TCG Card Shop Simulator.exe": {
+      "title": "TCG Card Shop Simulator (verify exact process name)"
+    },
+    "TEKKEN 8.exe": {
+      "title": "Tekken 8 (verify exact process name)"
+    },
+    "Terraria.exe": {
+      "title": "Terraria"
+    },
+    "TESV.exe": {
+      "title": "The Elder Scrolls V: Skyrim"
+    },
+    "tf_win64.exe": {
+      "title": "Team Fortress 2"
+    },
+    "The Sims 4 x64.exe": {
+      "title": "The Sims 4"
+    },
+    "TL.exe": {
+      "title": "Throne and Liberty (verify build)"
+    },
+    "tModLoader.exe": {
+      "title": "Terraria (tModLoader; modded)"
+    },
+    "Total War WARHAMMER III.exe": {
+      "title": "Total War: WARHAMMER III"
+    },
+    "Tower Of Fantasy.exe": {
+      "title": "Tower of Fantasy (verify exact process name)"
+    },
+    "Trackmania.exe": {
+      "title": "Trackmania"
+    },
+    "TS4_x64.exe": {
+      "title": "The Sims 4"
+    },
+    "TslGame.exe": {
+      "title": "PUBG: Battlegrounds"
+    },
+    "TslGame_BE.exe": {
+      "title": "PUBG: Battlegrounds"
+    },
+    "UbisoftConnect.exe": {
+      "title": "Ubisoft Connect (DO NOT use for game detection)"
+    },
+    "Undertale.exe": {
+      "title": "Undertale"
+    },
+    "Unrailed.exe": {
+      "title": "Unrailed!"
+    },
+    "Unturned.exe": {
+      "title": "Unturned"
+    },
+    "Valheim.exe": {
+      "title": "Valheim"
+    },
+    "VALORANT-Win64-Shipping.exe": {
+      "title": "VALORANT"
+    },
+    "VALORANT.exe": {
+      "title": "VALORANT"
+    },
+    "VampireSurvivors.exe": {
+      "title": "Vampire Survivors"
+    },
+    "Vermintide2.exe": {
+      "title": "Warhammer: Vermintide 2"
+    },
+    "VRChat.exe": {
+      "title": "VRChat"
+    },
+    "VRising.exe": {
+      "title": "V Rising"
+    },
+    "VTOLVR.exe": {
+      "title": "VTOL VR"
+    },
+    "Warcraft III Launcher.exe": {
+      "title": "Warcraft III launcher (not a reliable game-active signal)"
+    },
+    "Warcraft III.exe": {
+      "title": "Warcraft III (classic/legacy; Reforged may differ)"
+    },
+    "Warframe.exe": {
+      "title": "Warframe"
+    },
+    "Warframe.x64.exe": {
+      "title": "Warframe"
+    },
+    "Warhammer 40,000 Space Marine 2 - Retail.exe": {
+      "title": "Warhammer 40,000: Space Marine 2 (verify build)"
+    },
+    "Warhammer 40000 Space Marine 2.exe": {
+      "title": "Warhammer 40,000: Space Marine 2 (possible variant)"
+    },
+    "WatchDogs2.exe": {
+      "title": "Watch Dogs 2"
+    },
+    "witcher3.exe": {
+      "title": "The Witcher 3: Wild Hunt"
+    },
+    "Witcher3.exe": {
+      "title": "The Witcher 3: Wild Hunt"
+    },
+    "WorldWarZ.exe": {
+      "title": "World War Z: Aftermath"
+    },
+    "Wow.exe": {
+      "title": "World of Warcraft"
+    },
+    "wow.exe": {
+      "title": "World of Warcraft"
+    },
+    "WowClassic.exe": {
+      "title": "World of Warcraft Classic (verify current version)"
+    },
+    "Wuthering Waves.exe": {
+      "title": "Wuthering Waves (verify exact process name)"
+    },
+    "XCOM 2.exe": {
+      "title": "XCOM 2"
+    },
+    "XCom2.exe": {
+      "title": "XCOM 2"
+    },
+    "YuanShen.exe": {
+      "title": "Genshin Impact (alternate region/build)"
+    },
+    "ZenlessZoneZero.exe": {
+      "title": "Zenless Zone Zero"
+    },
+    "森林.exe": {
+      "title": "The Forest (possible localized executable; verify)"
+    },
+    "PioneerGame.exe": {
+      "title": "ARC Raiders"
+    },
+    "FarFarWest.exe": {
+      "title": "Far Far West"
+    },
+    "AION2.exe": {
+      "title": "AION 2"
+    },
+    "ValorMortis.exe": {
+      "title": "Valor Mortis (verify retail build)"
+    },
+    "Minotaur.exe": {
+      "title": "Valor Mortis (playtest/demo process; may not match retail)"
+    },
+    "SlayTheSpire2.exe": {
+      "title": "Slay the Spire 2 (verify current build)"
+    },
+    "Subnautica2.exe": {
+      "title": "Subnautica 2 (verify current build)"
+    },
+    "ControlResonant.exe": {
+      "title": "Control Resonant (verify current build)"
+    },
+    "Nioh3.exe": {
+      "title": "Nioh 3 (verify current build)"
+    },
+    "Fable.exe": {
+      "title": "Fable (verify release build)"
+    },
+    "ForzaHorizon6.exe": {
+      "title": "Forza Horizon 6 (verify release build)"
+    },
+    "GearsOfWarEday.exe": {
+      "title": "Gears of War: E-Day (verify release build)"
+    },
+    "StarWarsGalacticRacer.exe": {
+      "title": "Star Wars: Galactic Racer (verify release build)"
+    },
+    "FatalFrame2Remake.exe": {
+      "title": "Fatal Frame II: Crimson Butterfly Remake (verify build)"
+    },
+    "DiabloIV.exe": {
+      "title": "Diablo IV (alternate process-name variant; verify)"
+    },
+    "PaxDei.exe": {
+      "title": "Pax Dei (verify current build)"
+    },
+    "DuneAwakening.exe": {
+      "title": "Dune: Awakening (verify current build)"
+    },
+    "FarFarWest-Win64-Shipping.exe": {
+      "title": "Far Far West (alternate Unreal build name; verify)"
+    },
+    "Rivals-Win64-Shipping.exe": {
+      "title": "Marvel Rivals (alternate build name; verify)"
+    },
+    "EAFC27.exe": {
+      "title": "EA Sports FC 27 (verify current build)"
+    },
+    "FC27.exe": {
+      "title": "EA Sports FC 27 (possible process-name variant; verify)"
+    },
+    "MaddenNFL27.exe": {
+      "title": "Madden NFL 27 (verify current build)"
+    },
+    "Aniimo.exe": {
+      "title": "Aniimo (verify current build)"
+    },
+    "WARDOGS.exe": {
+      "title": "WARDOGS (verify current build)"
+    },
+    "TheAuctionGame.exe": {
+      "title": "The Auction Game (verify exact process name)"
+    },
+    "DrawPerfectCircle.exe": {
+      "title": "Draw a Perfect Circle (verify exact process name)"
+    },
+    "MountYourFriends3D.exe": {
+      "title": "Mount Your Friends 3D: A Hard Man is Good to Climb (verify exact process name)"
+    },
+    "SILENTHILLtownfall.exe": {
+      "title": "SILENT HILL: Townfall (verify release build)"
+    },
+    "Dressmaker.exe": {
+      "title": "Dressmaker (2026; verify exact process name)"
+    },
+    "MonstersAndMemories.exe": {
+      "title": "Monsters & Memories (verify current build)"
+    },
+    "Bellum.exe": {
+      "title": "Bellum (verify exact process name)"
+    },
+    "MIMESIS.exe": {
+      "title": "MIMESIS (verify exact process name)"
+    },
+    "STALZONE.exe": {
+      "title": "STALZONE (verify exact process name)"
+    },
+    "WalkOfLife.exe": {
+      "title": "Walk of Life (verify exact process name)"
+    },
+    "AlchemyFactory.exe": {
+      "title": "Alchemy Factory (verify exact process name)"
+    },
+    "NineKings.exe": {
+      "title": "9 Kings (verify exact process name)"
+    },
+    "FatalFuryCotW.exe": {
+      "title": "Fatal Fury: City of the Wolves (verify build)"
+    },
+    "AION2-Win64-Shipping.exe": {
+      "title": "AION 2 (alternate Unreal build name; verify)"
+    },
+    "LeagueClientUxRender.exe": {
+      "title": "League of Legends client renderer (not reliable for in-game detection)"
+    },
+    "GTA5_Enhanced.exe": {
+      "title": "Grand Theft Auto V Enhanced (verify build)"
+    },
+    "FiveM_b2189_GTAProcess.exe": {
+      "title": "FiveM / GTA V roleplay (build-dependent; verify)"
+    },
+    "FiveM_GTAProcess.exe": {
+      "title": "FiveM / GTA V roleplay (build-dependent; verify)"
+    },
+    "FiveM.exe": {
+      "title": "FiveM client (launcher; not reliable for in-game detection)"
+    },
+    "RageMP.exe": {
+      "title": "GTA V roleplay via RAGE Multiplayer (verify)"
+    },
+    "altv.exe": {
+      "title": "GTA V roleplay via alt:V (verify)"
+    },
+    "BlackDesertLauncher.exe": {
+      "title": "Black Desert Online launcher (not reliable for in-game detection)"
+    },
+    "EVE.exe": {
+      "title": "EVE Online (verify build)"
+    },
+    "Mabinogi.exe": {
+      "title": "Mabinogi (verify build)"
+    },
+    "Neverwinter.exe": {
+      "title": "Neverwinter (verify build)"
+    },
+    "StarTrek.exe": {
+      "title": "Star Trek Online (verify build)"
+    },
+    "Aion.bin": {
+      "title": "AION (legacy; not AION 2)"
+    },
+    "HuntGame.exe": {
+      "title": "Hunt: Showdown 1896 (verify build)"
+    },
+    "HuntGame-Win64-Shipping.exe": {
+      "title": "Hunt: Showdown 1896 (verify Unreal build)"
+    },
+    "WorldOfTanks.exe": {
+      "title": "World of Tanks (verify build)"
+    },
+    "WorldOfWarships.exe": {
+      "title": "World of Warships (verify build)"
+    },
+    "F1_26.exe": {
+      "title": "F1 26 (verify release build)"
+    },
+    "Madden26.exe": {
+      "title": "Madden NFL 26 (verify build)"
+    },
+    "EA SPORTS FC 26.exe": {
+      "title": "EA Sports FC 26 (verify exact process name)"
+    },
+    "FC26.exe": {
+      "title": "EA Sports FC 26 (possible process-name variant; verify)"
+    },
+    "NBA2K26.exe": {
+      "title": "NBA 2K26 (verify build)"
+    },
+    "PGA TOUR 2K25.exe": {
+      "title": "PGA Tour 2K25 (verify exact process name)"
+    },
+    "MortalKombat1.exe": {
+      "title": "Mortal Kombat 1 (alternate process-name variant; verify)"
+    },
+    "TEKKEN8.exe": {
+      "title": "Tekken 8 (alternate process-name variant; verify)"
+    },
+    "GuiltyGearStrive.exe": {
+      "title": "Guilty Gear -Strive- (verify build)"
+    },
+    "YuGiOh_MasterDuel.exe": {
+      "title": "Yu-Gi-Oh! Master Duel (verify build)"
+    },
+    "TFT.exe": {
+      "title": "Teamfight Tactics (verify build; often launched through League client)"
+    },
+    "RiotClientUx.exe": {
+      "title": "Riot Client UI (not reliable for game detection)"
+    },
+    "Palia.exe": {
+      "title": "Palia (verify build)"
+    },
+    "WutheringWaves.exe": {
+      "title": "Wuthering Waves (verify build)"
+    },
+    "TowerOfFantasy.exe": {
+      "title": "Tower of Fantasy (verify build)"
+    },
+    "OnceHuman.exe": {
+      "title": "Once Human (verify build)"
+    },
+    "OnceHuman.exe-Win64-Shipping.exe": {
+      "title": "Once Human (alternate Unreal build name; verify)"
+    },
+    "TheFirstDescendant.exe": {
+      "title": "The First Descendant (verify build)"
+    },
+    "BlueProtocol.exe": {
+      "title": "Blue Protocol (verify build/region availability)"
+    },
+    "ClairObscur.exe": {
+      "title": "Clair Obscur: Expedition 33 (verify build)"
+    },
+    "KingdomComeDeliverance2.exe": {
+      "title": "Kingdom Come: Deliverance II (verify build)"
+    },
+    "StellarBlade.exe": {
+      "title": "Stellar Blade (verify build)"
+    },
+    "MafiaTheOldCountry.exe": {
+      "title": "Mafia: The Old Country (verify build)"
+    },
+    "Dispatch.exe": {
+      "title": "Dispatch (verify build)"
+    },
+    "HollowKnightSilksong.exe": {
+      "title": "Hollow Knight: Silksong (verify build)"
+    },
+    "DoomTheDarkAges.exe": {
+      "title": "DOOM: The Dark Ages (verify build)"
+    },
+    "DoomTheDarkAges_x64.exe": {
+      "title": "DOOM: The Dark Ages (alternate process-name variant; verify)"
+    },
+    "Borderlands4.exe": {
+      "title": "Borderlands 4 (verify build)"
+    },
+    "Battlefield6.exe": {
+      "title": "Battlefield 6 (verify build)"
+    },
+    "bf6.exe": {
+      "title": "Battlefield 6 (possible process-name variant; verify)"
+    },
+    "ArenaBreakoutInfinite.exe": {
+      "title": "Arena Breakout: Infinite (verify build)"
+    },
+    "ARC Raiders.exe": {
+      "title": "ARC Raiders (alternate process-name variant; verify)"
+    },
+    "Marathon.exe": {
+      "title": "Marathon (verify release build)"
+    },
+    "Exoborne.exe": {
+      "title": "Exoborne (verify release build)"
+    },
+    "TheOuterWorlds2.exe": {
+      "title": "The Outer Worlds 2 (verify build)"
+    },
+    "Avowed.exe": {
+      "title": "Avowed (verify build)"
+    },
+    "FBCFirebreak.exe": {
+      "title": "FBC: Firebreak (verify build)"
+    },
+    "KillingFloor3.exe": {
+      "title": "Killing Floor 3 (verify build)"
+    },
+    "PEAK.exe": {
+      "title": "PEAK (verify exact process name)"
+    },
+    "AbioticFactor.exe": {
+      "title": "Abiotic Factor (verify build)"
+    },
+    "RanchSimulator.exe": {
+      "title": "Ranch Simulator (verify build)"
+    },
+    "SupermarketTogether.exe": {
+      "title": "Supermarket Together (verify build)"
+    },
+    "Schedule1.exe": {
+      "title": "Schedule I (alternate process-name variant; verify)"
+    },
+    "RanchSim.exe": {
+      "title": "Ranch Simulator (possible process-name variant; verify)"
+    },
+    "Liar's Bar.exe": {
+      "title": "Liar's Bar (verify exact process name)"
+    },
+    "LiarBar.exe": {
+      "title": "Liar's Bar (possible process-name variant; verify)"
+    },
+    "Muck.exe": {
+      "title": "Muck"
+    },
+    "ContentWarning.exe": {
+      "title": "Content Warning (alternate process-name variant; verify)"
+    },
+    "R.E.P.O.exe": {
+      "title": "R.E.P.O. (alternate process-name variant; verify)"
+    },
+    "GolfIt.exe": {
+      "title": "Golf It!"
+    },
+    "GolfWithYourFriends.exe": {
+      "title": "Golf With Your Friends"
+    },
+    "Lycans.exe": {
+      "title": "Lycans (verify exact process name)"
+    },
+    "BloodOnTheClocktower.exe": {
+      "title": "Blood on the Clocktower (verify build)"
+    },
+    "FearsToFathom.exe": {
+      "title": "Fears to Fathom (series; identify episode via install path)"
+    },
+    "FearsToFathom-ScratchCreek.exe": {
+      "title": "Fears to Fathom: Scratch Creek (verify build)"
+    },
+    "DisneyDreamlightValley.exe": {
+      "title": "Disney Dreamlight Valley (verify build)"
+    },
+    "VintageStory.exe": {
+      "title": "Vintage Story"
+    },
+    "FishingPlanet.exe": {
+      "title": "Fishing Planet"
+    },
+    "MarblesOnStream.exe": {
+      "title": "Marbles on Stream (verify build)"
+    },
+    "Heroes3.exe": {
+      "title": "Heroes of Might and Magic III (community/legacy build; verify)"
+    },
+    "HOMM3.exe": {
+      "title": "Heroes of Might and Magic III (community/legacy build; verify)"
+    },
+    "R2Client.exe": {
+      "title": "R2 Online: Reign of Revolution (verify build)"
+    },
+    "Metin2.exe": {
+      "title": "Metin2 (verify build)"
+    },
+    "Standoff2.exe": {
+      "title": "Standoff 2 (PC/emulator version; verify)"
+    },
+    "SuperMario64.exe": {
+      "title": "Super Mario 64 (PC port/emulator-dependent; verify)"
+    },
+    "TheOutlastTrials.exe": {
+      "title": "The Outlast Trials (verify build)"
+    },
+    "TheOutlastTrials-Win64-Shipping.exe": {
+      "title": "The Outlast Trials (verify Unreal build)"
+    },
+    "FarmingSimulator25.exe": {
+      "title": "Farming Simulator 25 (possible process-name variant; verify)"
+    },
+    "FINAL FANTASY XIV.exe": {
+      "title": "Final Fantasy XIV (verify exact process name)"
+    },
+    "ArmaReforgerSteam.exe": {
+      "title": "Arma Reforger (verify build)"
+    },
+    "ArmaReforger.exe": {
+      "title": "Arma Reforger (verify build)"
+    },
+    "HellLetLoose.exe": {
+      "title": "Hell Let Loose (verify build)"
+    },
+    "BattleBit.exe": {
+      "title": "BattleBit Remastered (verify build)"
+    },
+    "Satisfactory.exe": {
+      "title": "Satisfactory (possible process-name variant; verify)"
+    },
+    "EuroTruckSimulator2.exe": {
+      "title": "Euro Truck Simulator 2 (possible process-name variant; verify)"
+    },
+    "TheSims4_x64.exe": {
+      "title": "The Sims 4 (possible process-name variant; verify)"
+    },
+    "over the hill.exe": {
+      "title": "over the hill"
+    },
+    "PenguinHotel-Win64-Shipping.exe": {
+      "title": "MECCHA CHAMELEON"
+    }
+  }
+}

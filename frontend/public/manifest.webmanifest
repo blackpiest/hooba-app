@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Hooba",
+  "short_name": "Hooba",
+  "description": "Голосовые чаты для общения и веселья",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#10101A",
+  "theme_color": "#10101A",
+  "categories": ["social", "communication"],
+  "icons": [
+    { "src": "/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/pwa/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

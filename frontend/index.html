@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/hooba-favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#10101A" />
+    <!-- PWA: установка на телефон, запуск без интерфейса браузера (public/manifest.webmanifest, public/sw.js). -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Hooba" />
+    <!-- Непрозрачная строка статуса: с black-translucent iOS 26 укорачивает окно приложения на её высоту
+         и закрывает низ экрана полосой (WebKit bug 301108). Смена значения — только после переустановки на экран «Домой». -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png?v=2" />
+    <meta name="color-scheme" content="dark" />
+    <title>Hooba - Голосовые чаты для общения и веселья</title>
+    <meta name="description" content="Hooba создана как независимая платформа для игр и отдыха с друзьями, Настройте собственное пространство и приглашайте в него друзей" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Hooba" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:title" content="Hooba - Голосовые чаты для общения и веселья" />
+    <meta property="og:description" content="Hooba создана как независимая платформа для игр и отдыха с друзьями, Настройте собственное пространство и приглашайте в него друзей" />
+    <meta property="og:image" content="/og-cover.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Hooba - Голосовые чаты для общения и веселья" />
+    <meta name="twitter:description" content="Hooba создана как независимая платформа для игр и отдыха с друзьями, Настройте собственное пространство и приглашайте в него друзей" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

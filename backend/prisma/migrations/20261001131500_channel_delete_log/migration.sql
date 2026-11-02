@@ -1,0 +1,3 @@
+ALTER TYPE "ModerationAction" ADD VALUE 'CHANNEL_DELETE';
+
+ALTER TABLE "ModerationLog" ALTER COLUMN "targetUserId" DROP NOT NULL;

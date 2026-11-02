@@ -1,0 +1,6 @@
+/install.sh text eol=lf
+/infra/docker/*.yml text eol=lf
+/infra/docker/env.prod.example text eol=lf
+/infra/docker/*.Dockerfile text eol=lf
+/infra/docker/nginx/*.template text eol=lf
+/scripts/*.sh text eol=lf

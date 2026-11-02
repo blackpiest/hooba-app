@@ -1,0 +1,14 @@
+.git
+**/.git
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+!**/.env.example
+# Секреты и данные прод-сервера: в образы не нужны, а turn-tls (0700, владелец 65534)
+# ещё и ломает сборку от не-root пользователя.
+infra/docker/turn-tls
+backups
+logs
+desktop-updates
+desktop/release

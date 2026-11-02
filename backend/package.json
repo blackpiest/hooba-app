@@ -1,0 +1,59 @@
+{
+  "name": "backend",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.21.0",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "lint": "eslint src",
+    "test": "tsx --test --test-concurrency=1 \"src/**/*.test.ts\"",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "prisma db seed",
+    "loadtest": "tsx scripts/loadtest/run.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "prisma",
+      "@prisma/engines",
+      "argon2",
+      "esbuild",
+      "mediasoup"
+    ]
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.3.1",
+    "@fastify/multipart": "^10.1.4",
+    "@fastify/websocket": "^11.3.4",
+    "@prisma/client": "^6.19.3",
+    "argon2": "^0.44.0",
+    "dotenv": "^17.4.2",
+    "fastify": "^5.12.7",
+    "jose": "^6.2.3",
+    "mediasoup": "^3.19.22",
+    "sharp": "^0.35.5",
+    "zod": "^4.4.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.6.0",
+    "@types/ws": "^8.18.1",
+    "eslint": "^10.3.0",
+    "prettier": "^3.8.3",
+    "prisma": "^6.19.3",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.1",
+    "ws": "^8.22.0"
+  }
+}

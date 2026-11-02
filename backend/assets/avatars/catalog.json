@@ -1,0 +1,1294 @@
+{
+  "characters": [
+    {
+      "id": "yo",
+      "name": "Йо",
+      "file": "char-yo.webp",
+      "head": "head-yo.webp",
+      "idle": {
+        "file": "idle-yo.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "moran",
+      "name": "Моран",
+      "file": "char-moran.webp",
+      "head": "head-moran.webp",
+      "idle": {
+        "file": "idle-moran.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "wingi",
+      "name": "Винги",
+      "file": "char-wingi.webp",
+      "head": "head-wingi.webp",
+      "idle": {
+        "file": "idle-wingi.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "kiko",
+      "name": "Кико",
+      "file": "char-kiko.webp",
+      "head": "head-kiko.webp",
+      "idle": {
+        "file": "idle-kiko.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "smok",
+      "name": "Смок",
+      "file": "char-smok.webp",
+      "head": "head-smok.webp",
+      "idle": {
+        "file": "idle-smok.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "moti",
+      "name": "Моти",
+      "file": "char-moti.webp",
+      "head": "head-moti.webp",
+      "idle": {
+        "file": "idle-moti.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "admiral",
+      "name": "Адмирал",
+      "file": "char-navigator.webp",
+      "head": "head-navigator.webp",
+      "idle": {
+        "file": "idle-navigator.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "kai",
+      "name": "Кай",
+      "file": "char-kai.webp",
+      "head": "head-kai.webp",
+      "idle": {
+        "file": "idle-kai.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "bulka",
+      "name": "Булка",
+      "file": "char-bulka.webp",
+      "head": "head-bulka.webp",
+      "idle": {
+        "file": "idle-bulka.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "aleks",
+      "name": "Алекс",
+      "file": "char-aleks.webp",
+      "head": "head-aleks.webp",
+      "idle": {
+        "file": "idle-aleks.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "loki",
+      "name": "Локи",
+      "file": "char-loki.webp",
+      "head": "head-loki.webp",
+      "idle": {
+        "file": "idle-loki.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "jinny",
+      "name": "Джинни",
+      "file": "char-jinny.webp",
+      "head": "head-jinny.webp",
+      "idle": {
+        "file": "idle-jinny.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    },
+    {
+      "id": "nektarinka",
+      "name": "Нектаринка",
+      "file": "char-nektarinka.webp",
+      "head": "head-nektarinka.webp",
+      "idle": {
+        "file": "idle-nektarinka.webp",
+        "frames": 4,
+        "fps": 6,
+        "sequence": [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 1, 0, 3, 0]
+      }
+    }
+  ],
+  "backgrounds": [
+    {
+      "id": "ghosts",
+      "label": "Призраки",
+      "base": { "color": "#c846e6" },
+      "layers": [
+        {
+          "bitmap": [
+            ".########.",
+            "##########",
+            "##########",
+            "###.##.###",
+            "###.##.###",
+            "##########",
+            "##########",
+            "##########",
+            "..##..##..",
+            "..##..##.."
+          ],
+          "color": "#dd7cf3",
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "hearts",
+      "label": "Сердечки",
+      "base": { "color": "#2f9a6e" },
+      "layers": [
+        {
+          "bitmap": [
+            ".##.##.",
+            "#######",
+            "#######",
+            ".#####.",
+            "..###..",
+            "...#..."
+          ],
+          "color": "#5cc495",
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "stars",
+      "label": "Звёзды",
+      "base": { "gradient": { "from": "#2a2766", "to": "#141433" } },
+      "layers": [
+        { "bitmap": ["..#..", "..#..", "#####", "..#..", "..#.."], "color": "#ffffff66", "motion": "drift" },
+        {
+          "bitmap": ["#"],
+          "color": "#ffd0dc",
+          "size": 56,
+          "offsets": [[10, 18], [38, 44], [30, 6]],
+          "blink": true
+        }
+      ]
+    },
+    {
+      "id": "pumpkins",
+      "label": "Тыквы",
+      "base": { "color": "#ec7f1f" },
+      "layers": [
+        {
+          "bitmap": [
+            "......##....",
+            ".....##.....",
+            "..##.##.##..",
+            ".##########.",
+            "############",
+            "###.####.###",
+            "##...##...##",
+            "############",
+            "###.####.###",
+            ".##..##..##.",
+            "..########..",
+            ".....##....."
+          ],
+          "color": "#ffffff66",
+          "offsets": [[8, 8]],
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "diamonds",
+      "label": "Ромбы",
+      "base": { "gradient": { "from": "#7b2831", "to": "#4a1720" } },
+      "layers": [
+        {
+          "bitmap": [
+            "....#....",
+            "...###...",
+            "..#####..",
+            ".#######.",
+            "#########",
+            ".#######.",
+            "..#####..",
+            "...###...",
+            "....#...."
+          ],
+          "color": "#d4616a40",
+          "size": 40,
+          "offsets": [[1, 1], [21, 21]],
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "circles",
+      "label": "Кружки",
+      "base": { "color": "#f0bf2a" },
+      "layers": [
+        {
+          "bitmap": [
+            "..#####..",
+            ".#######.",
+            "#########",
+            "#########",
+            "#########",
+            "#########",
+            "#########",
+            ".#######.",
+            "..#####.."
+          ],
+          "color": "#fff6c77a",
+          "size": 40,
+          "offsets": [[1, 1], [21, 21]],
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "triangles",
+      "label": "Треугольники",
+      "base": {"color": "#3b6fd8"},
+      "layers": [
+        {
+          "bitmap": [
+            "....#....",
+            "...###...",
+            "...###...",
+            "..#####..",
+            "..#####..",
+            ".#######.",
+            ".#######.",
+            "#########"
+          ],
+          "color": "#ffffff40",
+          "size": 40,
+          "offsets": [[1, 2], [21, 22]],
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "squares",
+      "label": "Квадраты",
+      "base": {"color": "#d94848"},
+      "layers": [
+        {
+          "bitmap": [
+            "########",
+            "########",
+            "##....##",
+            "##....##",
+            "##....##",
+            "##....##",
+            "########",
+            "########"
+          ],
+          "color": "#ffc2c266",
+          "size": 40,
+          "offsets": [[2, 2], [22, 22]],
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "rings",
+      "label": "Колечки",
+      "base": {"color": "#169ea4"},
+      "layers": [
+        {
+          "bitmap": [
+            "..#####..",
+            ".#######.",
+            "###...###",
+            "##.....##",
+            "##.....##",
+            "##.....##",
+            "###...###",
+            ".#######.",
+            "..#####.."
+          ],
+          "color": "#c2f7f566",
+          "size": 40,
+          "offsets": [[1, 1], [21, 21]],
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "pluses",
+      "label": "Плюсики",
+      "base": {"color": "#e35d9a"},
+      "layers": [
+        {
+          "bitmap": [
+            "..###..",
+            "..###..",
+            "#######",
+            "#######",
+            "#######",
+            "..###..",
+            "..###.."
+          ],
+          "color": "#ffdbeb70",
+          "size": 40,
+          "offsets": [[3, 3], [23, 23]],
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "crosses",
+      "label": "Крестики",
+      "base": {"gradient": {"from": "#454b59", "to": "#262a33"}},
+      "layers": [
+        {
+          "bitmap": [
+            "##...##",
+            "###.###",
+            ".#####.",
+            "..###..",
+            ".#####.",
+            "###.###",
+            "##...##"
+          ],
+          "color": "#ffffff26",
+          "size": 40,
+          "offsets": [[3, 3], [23, 23]],
+          "motion": "drift"
+        }
+      ]
+    },
+    {
+      "id": "zigzag",
+      "label": "Зигзаги",
+      "base": {"color": "#7a55c4"},
+      "layers": [
+        {
+          "bitmap": [
+            "#.........#.........",
+            "##.......###.......#",
+            ".##.....##.##.....##",
+            "..##...##...##...##.",
+            "...##.##.....##.##..",
+            "....###.......###...",
+            ".....#.........#...."
+          ],
+          "color": "#e9deff55",
+          "size": 40,
+          "offsets": [[0, 6], [0, 26]],
+          "motion": "drift"
+        }
+      ]
+    },
+    {
+      "id": "dots",
+      "label": "Горошек",
+      "base": {"color": "#7fbf3a"},
+      "layers": [
+        {
+          "bitmap": [
+            ".##.",
+            "####",
+            "####",
+            ".##."
+          ],
+          "color": "#f2ffd680",
+          "size": 40,
+          "offsets": [[2, 2], [22, 2], [12, 22], [32, 22]],
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "stripes",
+      "label": "Полоски",
+      "base": {"color": "#8a5f45"},
+      "layers": [
+        {
+          "bitmap": [
+            "###.......###.......",
+            "##.......###.......#",
+            "#.......###.......##",
+            ".......###.......###",
+            "......###.......###.",
+            ".....###.......###..",
+            "....###.......###...",
+            "...###.......###....",
+            "..###.......###.....",
+            ".###.......###......",
+            "###.......###.......",
+            "##.......###.......#",
+            "#.......###.......##",
+            ".......###.......###",
+            "......###.......###.",
+            ".....###.......###..",
+            "....###.......###...",
+            "...###.......###....",
+            "..###.......###.....",
+            ".###.......###......"
+          ],
+          "color": "#ffe2cc2e",
+          "size": 40,
+          "offsets": [[0, 0]],
+          "motion": "scroll"
+        }
+      ]
+    },
+    {
+      "id": "grid",
+      "label": "Клетка",
+      "base": {"color": "#e8ecf2"},
+      "layers": [
+        {
+          "bitmap": [
+            "####################",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#...................",
+            "#..................."
+          ],
+          "color": "#a9b5c766",
+          "size": 40,
+          "offsets": [[0, 0]],
+          "motion": "none"
+        }
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "id": "red",
+      "label": "Красная",
+      "colors": { "frame": "#b12525", "line": "#6b142f", "plateEdge": "#ffa4a6", "inner": "#ff7174", "innerAlpha": 0.5 }
+    },
+    {
+      "id": "pink",
+      "label": "Розовая",
+      "colors": { "frame": "#b42364", "line": "#3c1669", "plateEdge": "#fea5f8", "inner": "#f072fe", "innerAlpha": 0.5 }
+    },
+    {
+      "id": "yellow",
+      "label": "Жёлтая",
+      "colors": { "frame": "#b39624", "line": "#685817", "plateEdge": "#ffdfa4", "inner": "#edff71", "innerAlpha": 0.5 }
+    },
+    {
+      "id": "blue",
+      "label": "Голубая",
+      "colors": { "frame": "#2ca2dd", "line": "#0b385b", "plateEdge": "#ade4ff", "inner": "#76cdf9", "innerAlpha": 0.5 }
+    },
+    {
+      "id": "gray",
+      "label": "Серая",
+      "colors": { "frame": "#8c8a99", "line": "#2a2734", "plateEdge": "#d7d5e2", "inner": "#bdbac9", "innerAlpha": 0.5 }
+    },
+    {
+      "id": "orange",
+      "label": "Оранжевая",
+      "colors": { "frame": "#ef822a", "line": "#582c0e", "plateEdge": "#ffd6ad", "inner": "#f9b176", "innerAlpha": 0.5 }
+    },
+    {
+      "id": "lime",
+      "label": "Лаймовая",
+      "colors": { "frame": "#87c22e", "line": "#2d480f", "plateEdge": "#d4f6a2", "inner": "#bde87d", "innerAlpha": 0.5 }
+    },
+    {
+      "id": "inviter",
+      "label": "Зазывала",
+      "colors": { "frame": "#8d56d1", "line": "#20106f", "plateEdge": "#b0a3ff", "inner": "#d6ccff", "innerAlpha": 0.75 },
+      "glow": { "colorA": "#7c69f7", "alphaA": 0.35, "colorB": "#b0a3ff", "alphaB": 0.55, "blurMin": 6, "blurMax": 14, "period": 2.8 },
+      "sparks": {
+        "rise": 30,
+        "endScale": 0.6,
+        "glowBlur": 8,
+        "outline": "#20106f",
+        "items": [
+          { "x": 1, "y": 22, "dx": -6, "delay": 0, "dur": 3.2, "size": 5, "color": "#d6ccff", "glow": "#8577f9" },
+          { "x": 3, "y": 41, "dx": -4, "delay": 1.4, "dur": 2.8, "size": 4, "color": "#b0a3ff", "glow": "#7c69f7" },
+          { "x": 0, "y": 58, "dx": -7, "delay": 0.6, "dur": 3.6, "size": 5, "color": "#b0a3ff", "glow": "#7c69f7" },
+          { "x": 2, "y": 74, "dx": -5, "delay": 2.2, "dur": 3, "size": 4, "color": "#d6ccff", "glow": "#8577f9" },
+          { "x": 4, "y": 33, "dx": -3, "delay": 2.9, "dur": 3.4, "size": 4, "color": "#f04470", "glow": "#f04470" },
+          { "x": 97, "y": 27, "dx": 6, "delay": 0.9, "dur": 3, "size": 5, "color": "#b0a3ff", "glow": "#7c69f7" },
+          { "x": 99, "y": 46, "dx": 4, "delay": 2.4, "dur": 3.5, "size": 4, "color": "#d6ccff", "glow": "#8577f9" },
+          { "x": 96, "y": 63, "dx": 7, "delay": 0.3, "dur": 2.9, "size": 5, "color": "#d6ccff", "glow": "#8577f9" },
+          { "x": 98, "y": 78, "dx": 5, "delay": 1.8, "dur": 3.3, "size": 4, "color": "#b0a3ff", "glow": "#7c69f7" },
+          { "x": 95, "y": 52, "dx": 3, "delay": 3.1, "dur": 3.1, "size": 4, "color": "#f04470", "glow": "#f04470" },
+          { "x": 8, "y": 5, "dx": -4, "delay": 1.1, "dur": 2.6, "size": 4, "color": "#d6ccff", "glow": "#8577f9" },
+          { "x": 16, "y": 3, "dx": -2, "delay": 2.6, "dur": 3, "size": 4, "color": "#b0a3ff", "glow": "#7c69f7" },
+          { "x": 90, "y": 5, "dx": 4, "delay": 0.4, "dur": 2.7, "size": 4, "color": "#d6ccff", "glow": "#8577f9" },
+          { "x": 83, "y": 3, "dx": 2, "delay": 1.9, "dur": 3.2, "size": 4, "color": "#b0a3ff", "glow": "#7c69f7" }
+        ]
+      }
+    },
+    {
+      "id": "ice",
+      "label": "Льдина",
+      "colors": { "frame": "#8fd3f4", "line": "#1d5d86", "plateEdge": "#e6f7ff", "inner": "#f0fbff", "innerAlpha": 0.6 },
+      "glow": { "colorA": "#9fe0ff", "alphaA": 0.25, "colorB": "#dff6ff", "alphaB": 0.5, "blurMin": 4, "blurMax": 10, "period": 4.2 },
+      "sparks": {
+        "rise": -46,
+        "shape": "flake",
+        "endScale": 0.8,
+        "glowBlur": 4,
+        "outline": "#1d5d86",
+        "items": [
+          { "x": 1, "y": 14, "dx": 2, "delay": 0, "dur": 4.2, "size": 5, "color": "#ffffff", "glow": "#9fe0ff" },
+          { "x": -1, "y": 34, "dx": -2, "delay": 1.6, "dur": 4.8, "size": 10, "color": "#dff4ff", "glow": "#cdeeff" },
+          { "x": 2, "y": 52, "dx": 3, "delay": 3.1, "dur": 4.4, "size": 5, "color": "#ffffff", "glow": "#9fe0ff" },
+          { "x": 0, "y": 64, "dx": -2, "delay": 0.8, "dur": 5, "size": 10, "color": "#dff4ff", "glow": "#cdeeff" },
+          { "x": 6, "y": 20, "dx": 3, "delay": 2.4, "dur": 4.6, "size": 5, "color": "#ffffff", "glow": "#9fe0ff" },
+          { "x": 99, "y": 18, "dx": -2, "delay": 0.5, "dur": 4.4, "size": 5, "color": "#ffffff", "glow": "#9fe0ff" },
+          { "x": 101, "y": 38, "dx": 2, "delay": 2.0, "dur": 4.9, "size": 10, "color": "#dff4ff", "glow": "#cdeeff" },
+          { "x": 98, "y": 55, "dx": -3, "delay": 3.4, "dur": 4.3, "size": 5, "color": "#ffffff", "glow": "#9fe0ff" },
+          { "x": 100, "y": 66, "dx": 2, "delay": 1.2, "dur": 5, "size": 10, "color": "#dff4ff", "glow": "#cdeeff" },
+          { "x": 94, "y": 26, "dx": -3, "delay": 2.9, "dur": 4.7, "size": 5, "color": "#ffffff", "glow": "#9fe0ff" },
+          { "x": 8, "y": 2, "dx": 2, "delay": 1.0, "dur": 4.5, "size": 5, "color": "#dff4ff", "glow": "#cdeeff" },
+          { "x": 15, "y": 1, "dx": -2, "delay": 3.6, "dur": 4.8, "size": 5, "color": "#ffffff", "glow": "#9fe0ff" },
+          { "x": 85, "y": 1, "dx": 2, "delay": 0.2, "dur": 4.6, "size": 5, "color": "#ffffff", "glow": "#9fe0ff" },
+          { "x": 92, "y": 3, "dx": -2, "delay": 2.7, "dur": 4.4, "size": 5, "color": "#dff4ff", "glow": "#cdeeff" }
+        ]
+      },
+      "edges": [
+        { "side": "top", "at": 4, "steps": [4, 6, 8, 8, 6, 6, 4, 2] },
+        { "side": "top", "at": 14, "steps": [2, 4, 4, 2] },
+        { "side": "top", "at": 30, "steps": [2, 2, 4, 2] },
+        { "side": "top", "at": 50, "steps": [2, 4, 4, 6, 4, 2, 2] },
+        { "side": "top", "at": 68, "steps": [2, 4, 2, 2] },
+        { "side": "top", "at": 84, "steps": [2, 4, 6, 4, 4] },
+        { "side": "top", "at": 95, "steps": [4, 6, 8, 8, 6, 4] },
+        { "side": "bottom", "at": 5, "steps": [4, 8, 10, 6] },
+        { "side": "bottom", "at": 13, "steps": [6, 12, 12, 8, 4] },
+        { "side": "bottom", "at": 22, "steps": [2, 6, 4] },
+        { "side": "bottom", "at": 31, "steps": [4, 10, 12, 6] },
+        { "side": "bottom", "at": 42, "steps": [2, 4, 2] },
+        { "side": "bottom", "at": 50, "steps": [6, 12, 12, 10, 4] },
+        { "side": "bottom", "at": 60, "steps": [2, 6, 8, 4] },
+        { "side": "bottom", "at": 70, "steps": [4, 10, 6] },
+        { "side": "bottom", "at": 80, "steps": [6, 12, 10, 4] },
+        { "side": "bottom", "at": 89, "steps": [2, 4, 2] },
+        { "side": "bottom", "at": 96, "steps": [4, 8, 6] },
+        { "side": "left", "at": 22, "steps": [2, 4, 6, 6, 4, 2] },
+        { "side": "left", "at": 44, "steps": [2, 4, 4, 2] },
+        { "side": "left", "at": 66, "steps": [4, 6, 8, 8, 6, 4, 2] },
+        { "side": "left", "at": 84, "steps": [2, 4, 2] },
+        { "side": "right", "at": 18, "steps": [2, 4, 6, 4, 2] },
+        { "side": "right", "at": 40, "steps": [4, 6, 8, 8, 6, 4] },
+        { "side": "right", "at": 60, "steps": [2, 2, 4, 2] },
+        { "side": "right", "at": 78, "steps": [2, 4, 6, 6, 4, 2] }
+      ]
+    }
+  ],
+  "badges": [
+    {
+      "id": "founder",
+      "name": "Основатель",
+      "category": "role",
+      "description": "Создатель этого сервера. Спасибо, что собрал здесь всех",
+      "hint": "Выдаётся только владельцу",
+      "icon": {
+        "palette": {"y": "#ffcc33", "w": "#fff2b3", "o": "#e08a1e", "d": "#7a3d0a", "r": "#f04470"},
+        "pixels": [
+          "............",
+          ".d...dd...d.",
+          ".yd..yy..dy.",
+          ".yyd.yy.dyy.",
+          ".yyyyyyyyyy.",
+          ".ywyyyyyywy.",
+          ".yyyyrryyyy.",
+          ".oyyyrryyyo.",
+          ".oooooooooo.",
+          ".dddddddddd.",
+          "............",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "admin",
+      "name": "Защитник",
+      "category": "role",
+      "description": "Следит за порядком на сервере и помогает участникам",
+      "hint": "Выдаётся администраторам",
+      "icon": {
+        "palette": {"b": "#4aa3ff", "l": "#9fd0ff", "d": "#1d4e8f", "w": "#ffffff"},
+        "pixels": [
+          "............",
+          ".dddddddddd.",
+          ".dbbbbbbbbd.",
+          ".dlbbbbbbbd.",
+          ".dlbbwbbbbd.",
+          ".dbbwwwbbbd.",
+          ".dbbbwbbbbd.",
+          "..dbbbbbbd..",
+          "..dbbbbbbd..",
+          "...dbbbbd...",
+          "....dbbd....",
+          ".....dd....."
+        ]
+      }
+    },
+    {
+      "id": "heart",
+      "name": "Душа сервера",
+      "category": "reward",
+      "description": "Делает сервер уютнее",
+      "hint": "Выдаётся за активный вклад в жизнь сообщества",
+      "icon": {
+        "palette": {"r": "#ff4f9a", "p": "#ffb3d4", "d": "#a3184f"},
+        "pixels": [
+          "............",
+          "..ddd..ddd..",
+          ".drrrddrrrd.",
+          "drpprrrrrrrd",
+          "drprrrrrrrrd",
+          "drrrrrrrrrrd",
+          ".drrrrrrrrd.",
+          "..drrrrrrd..",
+          "...drrrrd...",
+          "....drrd....",
+          ".....dd.....",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "gamer",
+      "name": "Ветеран игр",
+      "category": "achievement",
+      "description": "Участвовал в первом игровом ивенте сообщества",
+      "hint": "Участвуй в игровых событиях на сервере",
+      "icon": {
+        "palette": {"m": "#ff5fc8", "d": "#8a1f6e", "w": "#ffffff", "k": "#3a0f35"},
+        "pixels": [
+          "............",
+          "............",
+          "..dddddddd..",
+          ".dmmmmmmmmd.",
+          "dmmwmmmmkmmd",
+          "dmwwwmmkmkmd",
+          "dmmwmmmmkmmd",
+          "dmmmmddmmmmd",
+          "dmmmd..dmmmd",
+          ".ddd....ddd.",
+          "............",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "tester",
+      "name": "Тестировщик",
+      "category": "reward",
+      "description": "Помогал ловить баги в ранних версиях Hooba",
+      "hint": "Найди баг и сообщи о нём в специальном чате",
+      "icon": {
+        "palette": {"g": "#38e0a0", "l": "#b5ffe1", "d": "#1e6b5a", "w": "#d9f2ff"},
+        "pixels": [
+          "...dddddd...",
+          "....dwwd....",
+          "....dwwd....",
+          "....dwwd....",
+          "...dwwwwd...",
+          "..dwwwwwwd..",
+          ".dggggggggd.",
+          ".dglggggggd.",
+          ".dgglgglggd.",
+          ".dggggggggd.",
+          "..dddddddd..",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "flame",
+      "name": "Огонёк",
+      "category": "achievement",
+      "description": "Не пропадал из чата несколько дней подряд",
+      "hint": "Пиши в чат несколько дней подряд",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#7a1a0a", "r": "#e8432a", "o": "#ff9a2e", "y": "#ffe066"},
+        "pixels": [
+          "....d.......",
+          "....dd......",
+          "...drd..d...",
+          "...drrd.dd..",
+          "..drrrddrd..",
+          "..drorrrrd..",
+          ".drrooorrrd.",
+          ".drroyyorrd.",
+          ".drooyyoord.",
+          ".droyyyyord.",
+          "..dooyyood..",
+          "...dddddd..."
+        ]
+      }
+    },
+    {
+      "id": "chatter",
+      "name": "Болтун",
+      "category": "achievement",
+      "description": "Написал в чат больше, чем успели прочитать",
+      "hint": "Много общайся в текстовых каналах",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#1d4e8f", "b": "#4aa3ff", "w": "#ffffff"},
+        "pixels": [
+          "............",
+          "..dddddddd..",
+          ".dbbbbbbbbd.",
+          "dbbbbbbbbbbd",
+          "dbwwbwwbwwbd",
+          "dbwwbwwbwwbd",
+          "dbbbbbbbbbbd",
+          ".dbbbbbbbbd.",
+          "..ddbbdddd..",
+          "...dbd......",
+          "...dd.......",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "nightowl",
+      "name": "Полуночник",
+      "category": "achievement",
+      "description": "Самые душевные разговоры у него — после полуночи",
+      "hint": "Общайся по ночам",
+      "listed": false,
+      "icon": {
+        "palette": {"o": "#c9a227", "y": "#ffe066", "w": "#ffffff"},
+        "pixels": [
+          "............",
+          "...oyy......",
+          "..oyy....w..",
+          ".oyy....www.",
+          ".oyy.....w..",
+          "oyyy........",
+          "oyyy........",
+          "oyyyy.......",
+          ".oyyyyy.....",
+          "..oyyyyyyo..",
+          "...ooyyoo...",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "earlybird",
+      "name": "Ранняя пташка",
+      "category": "achievement",
+      "description": "Встречает утро на сервере раньше всех",
+      "hint": "Заходи по утрам",
+      "listed": false,
+      "icon": {
+        "palette": {"o": "#ff9a2e", "y": "#ffd23f", "w": "#fff6c2"},
+        "pixels": [
+          "............",
+          "..o..oo..o..",
+          "...o....o...",
+          "....yyyy....",
+          "...yyyyyy...",
+          "oo.ywyyyy.oo",
+          "oo.yyyyyy.oo",
+          "...yyyyyy...",
+          "....yyyy....",
+          "...o....o...",
+          "..o..oo..o..",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "voice",
+      "name": "Голосистый",
+      "category": "achievement",
+      "description": "Его голос в голосовых каналах узнают с первого слова",
+      "hint": "Проводи время в голосовых каналах",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#5b6478", "g": "#c3cad8", "w": "#ffffff"},
+        "pixels": [
+          "....dddd....",
+          "...dggggd...",
+          "...dgwggd...",
+          "...dgwggd...",
+          "...dggggd...",
+          "...dggggd...",
+          ".d.dggggd.d.",
+          ".d..dddd..d.",
+          "..d......d..",
+          "...dddddd...",
+          ".....dd.....",
+          "...dddddd..."
+        ]
+      }
+    },
+    {
+      "id": "streamer",
+      "name": "Стример",
+      "category": "achievement",
+      "description": "Показывал экран так часто, что пора заводить канал",
+      "hint": "Транслируй экран в голосовых каналах",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#2b2f3a", "b": "#7a5cff", "w": "#ffffff"},
+        "pixels": [
+          "............",
+          "dddddddddddd",
+          "dbbbbbbbbbbd",
+          "dbbbbwbbbbbd",
+          "dbbbbwwbbbbd",
+          "dbbbbwwwbbbd",
+          "dbbbbwwbbbbd",
+          "dbbbbwbbbbbd",
+          "dbbbbbbbbbbd",
+          "dddddddddddd",
+          ".....dd.....",
+          "...dddddd..."
+        ]
+      }
+    },
+    {
+      "id": "photo",
+      "name": "Фотограф",
+      "category": "achievement",
+      "description": "Чат без его картинок был бы заметно скучнее",
+      "hint": "Делись картинками в чате",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#2b2f3a", "g": "#8f98aa", "b": "#4aa3ff", "w": "#ffffff", "r": "#f04470"},
+        "pixels": [
+          "............",
+          "...ddd......",
+          ".dddddddddd.",
+          "dggggggggrgd",
+          "dgggddddgggd",
+          "dggdbbbbdggd",
+          "dggdbwbbdggd",
+          "dggdbbbbdggd",
+          "dgggddddgggd",
+          "dggggggggggd",
+          ".dddddddddd.",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "soul",
+      "name": "Душа компании",
+      "category": "achievement",
+      "description": "С ним любой разговор становится теплее",
+      "hint": "Будь там, где весело",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#7a3d0a", "y": "#ffcc33"},
+        "pixels": [
+          "...dddddd...",
+          "..dyyyyyyd..",
+          ".dyyyyyyyyd.",
+          "dyyyyyyyyyyd",
+          "dyyddyyddyyd",
+          "dyyddyyddyyd",
+          "dyyyyyyyyyyd",
+          "dydyyyyyydyd",
+          "dyyddddddyyd",
+          ".dyyyyyyyyd.",
+          "..dyyyyyyd..",
+          "...dddddd..."
+        ]
+      }
+    },
+    {
+      "id": "veteran",
+      "name": "Ветеран",
+      "category": "achievement",
+      "description": "На сервере так давно, что помнит его пустым",
+      "hint": "Будь с нами долго",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#3a4150", "g": "#b8c0cc", "y": "#ffcc33"},
+        "pixels": [
+          "dddddddddddd",
+          "dggggggggggd",
+          "dggggyyggggd",
+          "dggggyyggggd",
+          "dgyyyyyyyygd",
+          "dggyyyyyyggd",
+          "dgggyyyygggd",
+          "dggyyggyyggd",
+          ".dgyggggygd.",
+          "..dggggggd..",
+          "...dggggd...",
+          "....dddd...."
+        ]
+      }
+    },
+    {
+      "id": "patron",
+      "name": "Меценат",
+      "category": "reward",
+      "description": "Поддержал сервер, чтобы он жил и развивался",
+      "hint": "Выдаётся за поддержку сервера",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#7a3d0a", "y": "#ffcc33", "o": "#e08a1e", "w": "#fff2b3"},
+        "pixels": [
+          "...dddddd...",
+          "..dyyyyyyd..",
+          ".dwyyyyyyyd.",
+          "dyyyoyyoyyyd",
+          "dyyyoyyoyyyd",
+          "dyyyooooyyyd",
+          "dyyyoyyoyyyd",
+          "dyyyoyyoyyyd",
+          "dyyyyyyyyyyd",
+          ".dyyyyyyyyd.",
+          "..dyyyyyyd..",
+          "...dddddd..."
+        ]
+      }
+    },
+    {
+      "id": "champion",
+      "name": "Чемпион",
+      "category": "event",
+      "description": "Победил в ивенте сервера",
+      "hint": "Победи в ивенте",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#7a3d0a", "y": "#ffcc33", "w": "#fff2b3", "o": "#e08a1e"},
+        "pixels": [
+          "..dddddddd..",
+          "dddyyyyyyddd",
+          "d.dywyyyyd.d",
+          "d.dywyyyyd.d",
+          ".ddyyyyyydd.",
+          "...dyyyyd...",
+          "....dyyd....",
+          ".....oo.....",
+          ".....oo.....",
+          "...dddddd...",
+          "...dooood...",
+          "...dddddd..."
+        ]
+      }
+    },
+    {
+      "id": "eventer",
+      "name": "Участник ивента",
+      "category": "event",
+      "description": "Был в деле, когда на сервере что-то происходило",
+      "hint": "Участвуй в ивентах сервера",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#3a4150", "r": "#f04470", "w": "#ffffff"},
+        "pixels": [
+          ".d..........",
+          ".drrrrrrr...",
+          ".drrwrrrrr..",
+          ".drwwwrrrrr.",
+          ".drrwrrrrr..",
+          ".drrrrrrr...",
+          ".d..........",
+          ".d..........",
+          ".d..........",
+          ".d..........",
+          "ddd.........",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "newyear",
+      "name": "Ёлочка",
+      "category": "event",
+      "description": "Встречал Новый год вместе с сервером",
+      "hint": "Будь на сервере в новогоднюю ночь",
+      "listed": false,
+      "icon": {
+        "palette": {"y": "#ffd23f", "g": "#2fb36b", "r": "#f04470", "b": "#8a5a2b"},
+        "pixels": [
+          ".....yy.....",
+          ".....gg.....",
+          "....gggg....",
+          "...ggrggg...",
+          "....gggg....",
+          "...gggggg...",
+          "..gggggrgg..",
+          "...gggggg...",
+          "..grgggggg..",
+          ".gggggggrgg.",
+          ".....bb.....",
+          "....bbbb...."
+        ]
+      }
+    },
+    {
+      "id": "halloween",
+      "name": "Тыква",
+      "category": "event",
+      "description": "Пережил Хэллоуин на сервере и даже не испугался",
+      "hint": "Будь на сервере в Хэллоуин",
+      "listed": false,
+      "icon": {
+        "palette": {"g": "#2fb36b", "o": "#ff8a1e", "y": "#ffe066"},
+        "pixels": [
+          ".....gg.....",
+          "....gg......",
+          "..oooooooo..",
+          ".oooooooooo.",
+          "oooooooooooo",
+          "ooyyooooyyoo",
+          "ooyyooooyyoo",
+          "oooooooooooo",
+          "ooyyyyyyyyoo",
+          ".ooyoyyoyoo.",
+          "..oooooooo..",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "birthday",
+      "name": "Торт",
+      "category": "event",
+      "description": "Праздновал день рождения сервера",
+      "hint": "Будь на дне рождения сервера",
+      "listed": false,
+      "icon": {
+        "palette": {"y": "#ffd23f", "r": "#f04470", "w": "#fff6ef", "p": "#ff9cc2", "b": "#8a5a2b", "d": "#5a3a1a"},
+        "pixels": [
+          ".....y......",
+          ".....r......",
+          ".....r......",
+          "..wwwwwwww..",
+          ".wwpwwpwwpw.",
+          ".pppppppppp.",
+          ".bbbbbbbbbb.",
+          ".wwwwwwwwww.",
+          ".pppppppppp.",
+          ".bbbbbbbbbb.",
+          "dddddddddddd",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "sniper",
+      "name": "Меткий",
+      "category": "achievement",
+      "description": "Попадает точно в цель — и в играх, и в споре",
+      "hint": "Выдаётся владельцем",
+      "listed": false,
+      "icon": {
+        "palette": {"r": "#e8432a", "w": "#ffffff", "y": "#ffd23f"},
+        "pixels": [
+          "...rrrrrr...",
+          "..rwwwwwwr..",
+          ".rwrrrrrrwr.",
+          "rwrwwwwwwrwr",
+          "rwrwrrrrwrwr",
+          "rwrwryyrwrwr",
+          "rwrwryyrwrwr",
+          "rwrwrrrrwrwr",
+          "rwrwwwwwwrwr",
+          ".rwrrrrrrwr.",
+          "..rwwwwwwr..",
+          "...rrrrrr..."
+        ]
+      }
+    },
+    {
+      "id": "helper",
+      "name": "Помощник",
+      "category": "reward",
+      "description": "Всегда подскажет и поможет новичкам",
+      "hint": "Помогай участникам сервера",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#1f6b43", "w": "#ffffff", "g": "#2fb36b"},
+        "pixels": [
+          "............",
+          ".dddddddddd.",
+          ".dwwwwwwwwd.",
+          ".dwwwggwwwd.",
+          ".dwwwggwwwd.",
+          ".dwggggggwd.",
+          ".dwggggggwd.",
+          ".dwwwggwwwd.",
+          ".dwwwggwwwd.",
+          ".dwwwwwwwwd.",
+          ".dddddddddd.",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "bughunter",
+      "name": "Багхантер",
+      "category": "reward",
+      "description": "Нашёл ошибку и помог сделать Hooba лучше",
+      "hint": "Сообщи владельцу о найденной ошибке",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#3c6b45", "g": "#7be07b", "w": "#ffffff"},
+        "pixels": [
+          "..d......d..",
+          "...d....d...",
+          "....dddd....",
+          "...dwddwd...",
+          ".d.dddddd.d.",
+          "...dddddd...",
+          "d.dggddggd.d",
+          ".ddggddggdd.",
+          "..dggddggd..",
+          "d.dggddggd.d",
+          ".d.dddddd.d.",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "legend",
+      "name": "Легенда",
+      "category": "reward",
+      "description": "О нём на сервере рассказывают истории",
+      "hint": "Выдаётся владельцем",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#1d4e8f", "c": "#5fe3ff", "w": "#ffffff"},
+        "pixels": [
+          "............",
+          "...dddddd...",
+          "..dcwccwcd..",
+          ".dccwccwccd.",
+          "dddddddddddd",
+          ".dcccwwcccd.",
+          "..dccwwccd..",
+          "...dcwwcd...",
+          "....dccd....",
+          ".....dd.....",
+          "............",
+          "............"
+        ]
+      }
+    },
+    {
+      "id": "pioneer",
+      "name": "Первопроходец",
+      "category": "reward",
+      "description": "Был на сервере с самых первых дней",
+      "hint": "Выдаётся первым участникам",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#3a4150", "w": "#eef2f8", "b": "#4aa3ff", "r": "#f04470", "o": "#ff9a2e", "y": "#ffe066"},
+        "pixels": [
+          ".....dd.....",
+          "....dwwd....",
+          "....dwwd....",
+          "...dwbbwd...",
+          "...dwbbwd...",
+          "...dwwwwd...",
+          "...dwwwwd...",
+          "..drdwwdrd..",
+          ".drrdwwdrrd.",
+          ".dd.dddd.dd.",
+          ".....oo.....",
+          ".....yy....."
+        ]
+      }
+    },
+    {
+      "id": "melomane",
+      "name": "Меломан",
+      "category": "achievement",
+      "description": "Без музыки в голосовом канале не обходится",
+      "hint": "Делись музыкой с сервером",
+      "listed": false,
+      "icon": {
+        "palette": {"d": "#3b1f6b", "p": "#b07cff"},
+        "pixels": [
+          "............",
+          "....dddddddd",
+          "....dppppppd",
+          "....dddddddd",
+          "....d......d",
+          "....d......d",
+          "....d......d",
+          "..ddd....ddd",
+          ".dppd...dppd",
+          ".dppd...dppd",
+          "..dd.....dd.",
+          "............"
+        ]
+      }
+    }
+  ],
+  "titles": [
+    {"id": "oldtimer", "label": "Настоящий олд"},
+    {"id": "legend", "label": "Легенда", "badge": "legend", "listed": false},
+    {"id": "nightowl", "label": "Полуночник", "badge": "nightowl", "listed": false},
+    {"id": "bughunter", "label": "Охотник за багами", "badge": "bughunter", "listed": false},
+    {"id": "champion", "label": "Чемпион", "badge": "champion", "listed": false}
+  ]
+}
