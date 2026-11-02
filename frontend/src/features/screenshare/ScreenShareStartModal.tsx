@@ -136,7 +136,7 @@ export function ScreenShareStartModal() {
       size="lg"
       icon="screen"
       title="Демонстрация экрана"
-      subtitle="Выберете, что хотите показать зрителям"
+      subtitle="Выберите, что хотите показать зрителям"
       isDismissable={!busy}
       onClose={() => {
         if (!busy) {

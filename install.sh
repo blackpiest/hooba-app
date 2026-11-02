@@ -703,6 +703,11 @@ ensure_prod_secrets() {
     printf '\n# Поле setup_token на странице /setup. Нужен только до первого владельца.\nSETUP_TOKEN=%s\n' "$(rand_hex 24)" >>"$ENV_FILE"
     log_line "В ${ENV_REL} добавлен SETUP_TOKEN."
   fi
+  # Старые установки: bind на публичный IP внутри контейнера невозможен — голос без домена не поднимался.
+  if [[ "$(env_value MEDIASOUP_BIND_TO_ANNOUNCED)" == "1" ]]; then
+    set_env_value MEDIASOUP_BIND_TO_ANNOUNCED 0
+    log_line "В ${ENV_REL} выключен MEDIASOUP_BIND_TO_ANNOUNCED (мешал голосу на сервере без домена)."
+  fi
   chmod 600 "$ENV_FILE"
 }
 
@@ -747,7 +752,7 @@ NGINX_TLS_CERT=/etc/letsencrypt/live/${public_domain}/fullchain.pem
 NGINX_TLS_KEY=/etc/letsencrypt/live/${public_domain}/privkey.pem
 
 MEDIASOUP_ANNOUNCED_IP=${public_domain}
-MEDIASOUP_BIND_TO_ANNOUNCED=1
+MEDIASOUP_BIND_TO_ANNOUNCED=0
 MEDIASOUP_RTC_MIN_PORT=${MEDIASOUP_RTC_MIN_PORT}
 MEDIASOUP_RTC_MAX_PORT=${MEDIASOUP_RTC_MAX_PORT}
 MEDIASOUP_WEBRTC_PORT=${MEDIASOUP_RTC_MIN_PORT}
