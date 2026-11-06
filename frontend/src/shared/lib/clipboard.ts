@@ -16,6 +16,25 @@ export async function readClipboardText(): Promise<string | null> {
   }
 }
 
+/** Можно ли прочитать буфер без действия пользователя: только desktop. */
+export function canPeekClipboard(): boolean {
+  return Boolean(window.hoobaDesktop?.readClipboard);
+}
+
+/** Можно ли прочитать буфер хотя бы по нажатию кнопки. */
+export function canReadClipboard(): boolean {
+  return canPeekClipboard() || typeof navigator.clipboard?.readText === "function";
+}
+
+/**
+ * Содержимое буфера для подсказок интерфейса (пуст ли он), null — узнать нельзя.
+ * В вебе не читает: Firefox и Safari на каждое чтение показывают своё меню «Вставить»,
+ * поэтому `readClipboardText` вызываем только по явному действию «Вставить».
+ */
+export async function peekClipboardText(): Promise<string | null> {
+  return canPeekClipboard() ? readClipboardText() : null;
+}
+
 /**
  * Картинка в буфер обмена. Принимается промис PNG: Safari требует вызвать `clipboard.write` синхронно
  * в обработчике клика, а скачивание и перекодирование идут уже внутри.

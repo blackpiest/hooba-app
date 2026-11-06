@@ -5,7 +5,7 @@ import { ServerAddressField } from '../shared/ui/server-address-field/ServerAddr
 import { register } from '../shared/api/auth';
 import { formatApiError } from '../shared/api/format-error';
 import { buildAppInviteLink, commitServerAddress, getServerUrl, isDesktopApp } from '../shared/lib/server-target';
-import { readClipboardText } from '../shared/lib/clipboard';
+import { canPeekClipboard, canReadClipboard, readClipboardText } from '../shared/lib/clipboard';
 import { buildLandingUrl, openDesktopAppOrLanding } from '../shared/lib/open-desktop-app';
 import { playAuthSuccessSound } from '@/features/ui-sounds/ui-sounds';
 import { Alert, Button, Dialogue, PasswordField, TextField, linkClass } from '@/shared/ui';
@@ -41,10 +41,15 @@ function inviteCodeError(value: string): string | null {
   return 'error' in parsed ? parsed.error : null;
 }
 
-/** Поле инвайт-кода: кнопка «Вставить» доступна, только пока в буфере обмена есть текст; без доступа к буферу её нет. */
+/**
+ * Поле инвайт-кода: кнопка «Вставить» видна, пока поле пустое и буфер доступен.
+ * Следить за буфером может только desktop: в вебе Firefox и Safari на каждое чтение показывают
+ * своё меню «Вставить», поэтому там читаем только по нажатию кнопки.
+ */
 function InviteCodeField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const canPeek = canPeekClipboard();
   // undefined — ещё не читали; null — прочитать не удалось (в вебе браузер закрыл доступ), кнопка скрыта.
-  const [clipboard, setClipboard] = useState<string | null | undefined>(undefined);
+  const [clipboard, setClipboard] = useState<string | null | undefined>(() => (canReadClipboard() ? undefined : null));
 
   // Невалидная ссылка остаётся в поле для наглядности: ошибка выводится из значения и блокирует отправку.
   const applyPasted = (text: string) => {
@@ -67,6 +72,9 @@ function InviteCodeField({ value, onChange }: { value: string; onChange: (value:
   }, []);
 
   useEffect(() => {
+    if (!canPeek) {
+      return;
+    }
     let alive = true;
     void readClipboardText().then((text) => {
       if (alive) {
@@ -87,7 +95,7 @@ function InviteCodeField({ value, onChange }: { value: string; onChange: (value:
       window.removeEventListener('focus', refreshClipboard);
       document.removeEventListener('visibilitychange', refreshClipboard);
     };
-  }, [refreshClipboard]);
+  }, [canPeek, refreshClipboard]);
 
   return (
     <TextField
@@ -95,22 +103,28 @@ function InviteCodeField({ value, onChange }: { value: string; onChange: (value:
       value={value}
       onChange={handleChange}
       error={inviteCodeError(value)}
-      onFocus={() => void refreshClipboard()}
+      onFocus={() => {
+        if (canPeek) {
+          void refreshClipboard();
+        }
+      }}
       placeholder="код приглашения"
       autoComplete="off"
       mono
       isRequired
       trailingWide
       trailing={
-        clipboard === null ? undefined : (
+        clipboard === null || value.trim() ? undefined : (
           <Button
             variant="secondary"
             size="sm"
-            isDisabled={!clipboard}
+            isDisabled={canPeek && !clipboard}
             onPress={async () => {
-              const text = (await readClipboardText())?.trim();
-              if (text) {
-                applyPasted(text);
+              const text = await readClipboardText();
+              if (text === null) {
+                setClipboard(null);
+              } else if (text.trim()) {
+                applyPasted(text.trim());
               }
             }}
           >

@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState, type MouseEvent, type ReactNode } from "react";
-import { readClipboardText, writeClipboardText } from "@/shared/lib/clipboard";
+import { peekClipboardText, readClipboardText, writeClipboardText } from "@/shared/lib/clipboard";
 import { isTouchInput } from "@/hooks/use-breakpoint";
 import { ContextMenu, MenuItem } from "@/shared/ui/menu";
 
@@ -51,7 +51,7 @@ export function useEditContextMenu(): {
     const { clientX: x, clientY: y } = event;
     const request = ++requestRef.current;
     void (async () => {
-      const clip = await readClipboardText();
+      const clip = await peekClipboardText();
       if (request !== requestRef.current) {
         return;
       }

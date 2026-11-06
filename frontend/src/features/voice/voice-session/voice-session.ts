@@ -60,7 +60,24 @@ let snapshotSyncTimer: ReturnType<typeof setTimeout> | null = null;
 /** Захват показа, ждущий публикации в новом handle (переподключение к той же комнате). */
 let carriedScreen: MediaStream | null = null;
 
+const VOICE_MEDIA_FAILED_TEXT =
+  "Соединение для звука не установилось: вас не слышно, и вы никого не слышите. Нажмите на канал, чтобы подключиться заново.";
+
+/** Сигналинг жив и мы в комнате, но звук не идёт. Переподключение — только по клику: автоповтор при закрытых портах был бы бесконечным. */
+let voiceMediaFailed = false;
+
+function setVoiceMediaFailed(failed: boolean) {
+  voiceMediaFailed = failed;
+  const ui = useVoiceSessionUi.getState();
+  if (failed) {
+    ui.setError(VOICE_MEDIA_FAILED_TEXT);
+  } else if (ui.error === VOICE_MEDIA_FAILED_TEXT) {
+    ui.setError(null);
+  }
+}
+
 function clearLocalVoiceMedia() {
+  setVoiceMediaFailed(false);
   msRef.current?.stop();
   msRef.current = null;
   useVoiceSettingsStore.getState().setMediasoupHandle(null);
@@ -146,6 +163,11 @@ function startMediasoupForChannel(channelId: number) {
         },
         onRemoteHearing: (userId, hearing) => {
           useVoiceStore.getState().setInboundHearing(userId, hearing);
+        },
+        onConnectionProblem: (failed) => {
+          if (gen === voiceMsGen) {
+            setVoiceMediaFailed(failed);
+          }
         },
       });
       if (gen !== voiceMsGen) {
@@ -330,12 +352,14 @@ export function connectVoiceChannel(channelId: number): void {
     getVoiceMediasoupHandle()?.stopWatchingScreenShare();
     screen.setWatching(null);
   }
-  if (!isVoiceSessionHealthy(channelId)) {
+  // Клик по своему каналу при оборванном звуке — переподключение, иначе кнопка выглядит мёртвой.
+  const healthy = isVoiceSessionHealthy(channelId) && !voiceMediaFailed;
+  if (!healthy) {
     primeVoiceAudioFromUserGesture();
   }
   setIntendedVoiceChannelId(channelId);
   useVoiceSessionUi.getState().setError(null);
-  if (isVoiceSessionHealthy(channelId)) {
+  if (healthy) {
     return;
   }
   voiceJoinInFlight = true;

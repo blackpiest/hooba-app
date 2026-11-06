@@ -9,6 +9,8 @@ export type VoiceMediasoupOptions = {
   onSpeaking?: (speaking: boolean) => void;
   /** Чужое кольцо: до этого клиента дошла энергия RTP. Не путать с `voice:speaking`. */
   onRemoteHearing?: (userId: number, hearing: boolean) => void;
+  /** `true` — транспорт не соединился с сервером и звук не идёт; `false` — связь восстановилась. */
+  onConnectionProblem?: (failed: boolean) => void;
 };
 
 export type VoiceMediaDebug = {

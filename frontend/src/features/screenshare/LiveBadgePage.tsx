@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect } from "react";
-import wordmark from "@/assets/hooba-full-logo-light.svg";
+import wordmark from "@/assets/hooba-wordmark.svg";
 
 if (typeof document !== "undefined" && window.location.pathname === "/live") {
   document.documentElement.classList.add("ds-overlay");

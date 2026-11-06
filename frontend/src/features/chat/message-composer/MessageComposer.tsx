@@ -19,7 +19,7 @@ import {
   toggleFormat,
   type FormatKind,
 } from "@/features/chat/message-content";
-import { readClipboardText, writeClipboardText } from "@/shared/lib/clipboard";
+import { peekClipboardText, readClipboardText, writeClipboardText } from "@/shared/lib/clipboard";
 import { Composer, ComposerTextarea, ContextMenu, MenuItem } from "@/shared/ui";
 import { cx } from "@/utils/cx";
 import { EmojiPickerButton } from "./EmojiPicker";
@@ -261,7 +261,7 @@ export function MessageComposer({
     const request = ++requestRef.current;
     setToolbar(null);
     void (async () => {
-      const clip = await readClipboardText();
+      const clip = await peekClipboardText();
       if (request !== requestRef.current) {
         return;
       }

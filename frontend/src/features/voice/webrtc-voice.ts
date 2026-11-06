@@ -7,6 +7,7 @@ import type {
   VoiceMediasoupOptions,
 } from './webrtc-voice.types';
 import { getSignalingDebug, requestVoiceSignal, sendVoiceSpeaking, subscribeRealtime } from '../../shared/ws/app-realtime';
+import { createVoiceConnectionWatch } from './voice-connection-watch';
 import { formatVoiceIncidentReport, type IceReportSnapshot, type PlaybackSinkState, type VoiceIncidentEvent } from './voice-incident-report';
 import { useScreenShareStore } from '../screenshare/screen-share-store';
 import {
@@ -645,8 +646,14 @@ export async function startVoiceMediasoup(
     ...transportIceOpts,
   });
 
+  const connectionWatch = createVoiceConnectionWatch((failed) => {
+    pushEvent(failed ? 'media connection failed' : 'media connection restored');
+    options?.onConnectionProblem?.(failed);
+  });
+
   const wireConnect = (t: Transport, direction: 'send' | 'recv') => {
     t.on('connect', ({ dtlsParameters }, callback, errback) => {
+      connectionWatch.connecting(direction);
       void requestVoiceSignal(channelId, 'connectTransport', {
         direction,
         dtlsParameters,
@@ -1469,6 +1476,7 @@ export async function startVoiceMediasoup(
       return;
     }
     stopped = true;
+    connectionWatch.dispose();
     micEpoch += 1;
     void stopScreenShare();
     stopWatchingScreenShare();
@@ -1765,9 +1773,11 @@ export async function startVoiceMediasoup(
   unsubVolume = subscribeVoiceVolume(applyVolumeGains);
   sendTransport.on('connectionstatechange', (state) => {
     pushEvent(`send connection=${state}`);
+    connectionWatch.state('send', state);
   });
   recvTransport.on('connectionstatechange', (state) => {
     pushEvent(`recv connection=${state}`);
+    connectionWatch.state('recv', state);
   });
   unsubSignaling = subscribeRealtime((ev, data) => {
     if (ev !== 'connection:status') {

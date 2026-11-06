@@ -38,6 +38,8 @@ TURN_MIN_PORT=50000
 TURN_MAX_PORT=50100
 MEDIASOUP_RTC_MIN_PORT=40000
 MEDIASOUP_RTC_MAX_PORT=40100
+# hooba voice-check: сколько секунд ждать, пока участник зайдёт в голосовой канал.
+VOICE_CHECK_SECONDS=30
 
 GIB=1073741824
 # Квота картинок чата (UPLOADS_MAX_BYTES backend): при 80% старые картинки удаляются до 70%.
@@ -708,6 +710,15 @@ ensure_prod_secrets() {
     set_env_value MEDIASOUP_BIND_TO_ANNOUNCED 0
     log_line "В ${ENV_REL} выключен MEDIASOUP_BIND_TO_ANNOUNCED (мешал голосу на сервере без домена)."
   fi
+  # Старые установки: браузеру передавался домен, а не IP. Не все браузеры принимают такой адрес
+  # соединения (Firefox его не разбирает), и голос молча оставался без звука.
+  local announced turn_ip
+  announced="$(env_value MEDIASOUP_ANNOUNCED_IP)"
+  turn_ip="$(env_value TURN_EXTERNAL_IP)"
+  if [[ -n "$announced" ]] && ! is_ipv4 "$announced" && is_public_ipv4 "$turn_ip"; then
+    set_env_value MEDIASOUP_ANNOUNCED_IP "$turn_ip"
+    log_line "В ${ENV_REL} адрес для голоса заменён: ${announced} → ${turn_ip} (домен мешал голосу в части браузеров)."
+  fi
   chmod 600 "$ENV_FILE"
 }
 
@@ -751,7 +762,7 @@ HTTPS_PORT=443
 NGINX_TLS_CERT=/etc/letsencrypt/live/${public_domain}/fullchain.pem
 NGINX_TLS_KEY=/etc/letsencrypt/live/${public_domain}/privkey.pem
 
-MEDIASOUP_ANNOUNCED_IP=${public_domain}
+MEDIASOUP_ANNOUNCED_IP=${turn_ext_ip}
 MEDIASOUP_BIND_TO_ANNOUNCED=0
 MEDIASOUP_RTC_MIN_PORT=${MEDIASOUP_RTC_MIN_PORT}
 MEDIASOUP_RTC_MAX_PORT=${MEDIASOUP_RTC_MAX_PORT}
@@ -1165,6 +1176,199 @@ cmd_validate() {
   log_line "Проверка пройдена."
 }
 
+# Отчёт проверки голоса владелец отправляет разработчикам: адреса участников в нём не нужны.
+mask_ips() {
+  sed -E 's/([0-9]{1,3}\.[0-9]{1,3})\.[0-9]{1,3}\.[0-9]{1,3}/\1.x.x/g'
+}
+
+# Проверки, для которых не нужен участник: контейнеры, адреса, журнал mediasoup.
+# Журнал показывает разницу между «браузер не пытался» и «пытался, но соединения нет».
+voice_check_server() {
+  local svc running announced turn_ip host public_ip resolved logs attempts connected
+  running="$(compose ps --status running --services 2>/dev/null || true)"
+  for svc in backend coturn; do
+    if grep -qx "$svc" <<<"$running"; then
+      log_line "Контейнер ${svc} работает."
+    else
+      log_line "ВНИМАНИЕ: контейнер ${svc} не запущен. Запустите заново: hooba repair; журнал: hooba logs ${svc}"
+    fi
+  done
+
+  announced="$(env_value MEDIASOUP_ANNOUNCED_IP)"
+  turn_ip="$(env_value TURN_EXTERNAL_IP)"
+  public_ip="$(detect_public_ip)"
+  if [[ -n "$public_ip" && "$public_ip" != "$turn_ip" ]]; then
+    log_line "ВНИМАНИЕ: внешний IP сервера ${public_ip}, а в настройках голоса ${turn_ip}. Обновите адрес: hooba install"
+  fi
+  if is_ipv4 "$announced"; then
+    log_line "Адрес для голоса: ${announced}."
+    if [[ -n "$public_ip" && "$announced" != "$public_ip" ]]; then
+      log_line "ВНИМАНИЕ: адрес для голоса ${announced} не совпадает с внешним IP сервера ${public_ip}. Обновите адрес: hooba install"
+    fi
+  else
+    log_line "ВНИМАНИЕ: браузерам для голоса передаётся домен ${announced}, а не IP. Часть браузеров его не принимает, и звука нет."
+    echo "  Исправить (сайт и голос будут недоступны около минуты): hooba repair"
+  fi
+  # Домен всё ещё нужен для резервного пути голоса через TURN, поэтому он должен вести на этот сервер.
+  host="$(env_value PUBLIC_DOMAIN)"
+  if ! is_ipv4 "$host"; then
+    resolved="$(getent ahostsv4 "$host" 2>/dev/null | awk '{ print $1; exit }' || true)"
+    if [[ -z "$resolved" ]]; then
+      log_line "ВНИМАНИЕ: домен ${host} никуда не указывает."
+      echo "  В панели, где куплен домен, создайте A-запись: ${host} → ${turn_ip}"
+    elif [[ "$resolved" != "$turn_ip" ]]; then
+      log_line "ВНИМАНИЕ: домен ${host} указывает на ${resolved}, а у сервера IP ${turn_ip}. Резервный путь голоса (TURN) через него не сработает."
+      echo "  Направьте A-запись на ${turn_ip}. Если домен в Cloudflare — выключите для него прокси (серое облако, «DNS only»)."
+    else
+      log_line "Домен ${host} → ${resolved} — OK."
+    fi
+  fi
+
+  logs="$(compose logs --no-color --tail=3000 backend 2>&1 | grep 'mediasoup' || true)"
+  if grep -q 'worker не запущен\|упал:' <<<"$logs"; then
+    log_line "ВНИМАНИЕ: голосовой модуль сервера не запустился или падал. Обновите и перезапустите: hooba update"
+  fi
+  if grep -q 'address not available' <<<"$logs"; then
+    log_line "ВНИМАНИЕ: голосовой модуль не смог занять адрес. В новых версиях это исправлено: hooba update"
+  fi
+  attempts="$(grep -c 'WebRtcTransport' <<<"$logs" || true)"
+  connected="$(grep -c 'ice tuple' <<<"$logs" || true)"
+  if ((attempts == 0)); then
+    log_line "В журнале сервера пока нет подключений к голосу."
+  elif ((connected == 0)); then
+    log_line "ВНИМАНИЕ: браузеры пытались подключиться к голосу (попыток: ${attempts}), но соединение ни разу не установилось."
+    echo "  Значит, вход в канал работает, а звук до сервера не доходит. Следующая проверка покажет, почему."
+  else
+    log_line "В журнале есть успешные голосовые соединения: ${connected} (попыток: ${attempts})."
+  fi
+}
+
+# Считает пакеты голоса, пока участник заходит в канал: так видно, закрыты порты снаружи
+# или проблема внутри сервера. Содержимое пакетов и адреса участников не сохраняются.
+# Результат — VOICE_REQUESTS и VOICE_REPLIES; пустые, если проверку не запускали.
+voice_check_traffic() {
+  local single min max capture errors rc=0 counts
+  local -a filter
+  if [[ ! -t 0 ]]; then
+    log_line "Запуск без терминала: проверка с участником пропущена."
+    return 0
+  fi
+  prompt_yn "Проверить, доходит ли голос до сервера? Понадобится зайти в голосовой канал с компьютера или телефона. Рекомендуется" "y" || return 0
+  if ! command -v tcpdump >/dev/null 2>&1; then
+    prompt_yn "Для этого нужна небольшая программа tcpdump. Установить? Рекомендуется" "y" || return 0
+    step "Установка tcpdump" "  - есть ли у сервера интернет: curl -I https://deb.debian.org\n  - свободно ли место на диске: df -h /"
+    apt_install tcpdump || die "Не удалось установить tcpdump. Поставьте его вручную (apt-get install -y tcpdump) и запустите hooba voice-check снова."
+  fi
+
+  single="$(env_value MEDIASOUP_WEBRTC_PORT)"
+  min="$(env_value MEDIASOUP_RTC_MIN_PORT)"
+  max="$(env_value MEDIASOUP_RTC_MAX_PORT)"
+  if [[ -n "$single" ]]; then
+    min="$single"
+    max="$single"
+    filter=(port "$single")
+  else
+    filter=(portrange "${min}-${max}")
+  fi
+
+  capture="$(mktemp "${LOG_DIR}/voice-capture.XXXXXX")"
+  errors="${capture}.err"
+  log_line "В течение ${VOICE_CHECK_SECONDS} секунд зайдите в голосовой канал (если уже в канале — выйдите и зайдите снова). Жду…"
+  timeout "$VOICE_CHECK_SECONDS" tcpdump -ni any -l -c 500 "${filter[@]}" >"$capture" 2>"$errors" || rc=$?
+  # 124 — вышло отведённое время, это обычное завершение.
+  if ((rc != 0 && rc != 124)); then
+    log_line "Предупреждение: посчитать пакеты не удалось: $(tail -n1 "$errors")"
+    rm -f "$capture" "$errors"
+    return 0
+  fi
+  counts="$(awk -v min="$min" -v max="$max" '
+    {
+      for (i = 2; i < NF; i++) {
+        if ($i == ">") {
+          src = $(i - 1); dst = $(i + 1)
+          sub(/:$/, "", dst); sub(/.*\./, "", src); sub(/.*\./, "", dst)
+          if (dst + 0 >= min && dst + 0 <= max) requests++
+          else if (src + 0 >= min && src + 0 <= max) replies++
+          break
+        }
+      }
+    }
+    END { print requests + 0, replies + 0 }' "$capture")"
+  rm -f "$capture" "$errors"
+  read -r VOICE_REQUESTS VOICE_REPLIES <<<"$counts"
+
+  if ((VOICE_REQUESTS == 0)); then
+    log_line "ВНИМАНИЕ: за ${VOICE_CHECK_SECONDS} секунд от браузеров не пришло ни одного пакета голоса."
+    echo "  Если кто-то заходил в канал, то пакеты не дошли до сервера. Что проверить:"
+    echo "  - брандмауэр в панели хостинга (Firewall, Security groups, «Сетевой экран»): откройте порты"
+    echo "    TCP: 80, 443, ${TURN_PORT}, ${TURN_TLS_PORT}, ${MEDIASOUP_RTC_MIN_PORT}-${MEDIASOUP_RTC_MAX_PORT}"
+    echo "    UDP: ${TURN_PORT}, ${MEDIASOUP_RTC_MIN_PORT}-${MEDIASOUP_RTC_MAX_PORT}, ${TURN_MIN_PORT}-${TURN_MAX_PORT}"
+    echo "  - тариф с общим IP (NAT): хостинг может не пробрасывать эти порты, уточните у него"
+    echo "  - другой браузер: Chrome, Edge или приложение Hooba"
+  elif ((VOICE_REPLIES == 0)); then
+    log_line "ВНИМАНИЕ: пакеты голоса до сервера доходят (${VOICE_REQUESTS}), но сервер на них не отвечает."
+    echo "  Перезапустите сервер: hooba repair. Если не помогло — журнал: hooba logs backend"
+  else
+    log_line "Пакеты голоса идут в обе стороны (к серверу: ${VOICE_REQUESTS}, от сервера: ${VOICE_REPLIES}). Сеть в порядке."
+    echo "  Если звука всё равно нет, причина, скорее всего, на устройстве участника: разрешение на микрофон,"
+    echo "  выбранные микрофон и динамики в настройках Hooba."
+  fi
+}
+
+# Файл для вопроса разработчикам: только настройки без секретов (белый список), адреса участников скрыты.
+write_voice_report() {
+  local report="$1" key
+  (
+    umask 077
+    {
+      echo "hooba voice-check, $(date '+%F %T')"
+      if [[ -d "$REPO_ROOT/.git" ]]; then
+        echo "Версия: $(repo_git log -1 --format='%h от %cd' --date=short 2>/dev/null || echo '?')"
+      fi
+      echo "Пакеты за проверку: к серверу=${VOICE_REQUESTS:-не проверялось}, от сервера=${VOICE_REPLIES:-не проверялось}"
+      echo
+      echo "--- Настройки голоса"
+      for key in PUBLIC_DOMAIN MEDIASOUP_ANNOUNCED_IP MEDIASOUP_BIND_TO_ANNOUNCED MEDIASOUP_WEBRTC_PORT \
+        MEDIASOUP_RTC_MIN_PORT MEDIASOUP_RTC_MAX_PORT TURN_EXTERNAL_IP TURN_PORT TURN_MIN_PORT TURN_MAX_PORT \
+        TURN_TLS_ENABLED TURN_TLS_PORT RTC_ICE_TRANSPORT_POLICY; do
+        echo "${key}=$(env_value "$key")"
+      done
+      echo
+      echo "--- Контейнеры"
+      compose ps -a 2>&1 || true
+      echo
+      echo "--- Брандмауэр сервера"
+      if command -v ufw >/dev/null 2>&1; then ufw status 2>&1 || true; else echo "ufw не установлен"; fi
+      echo
+      echo "--- Журнал голоса (backend)"
+      { compose logs --no-color --tail=3000 backend 2>&1 | grep 'mediasoup' | tail -n 80 | mask_ips; } || true
+      echo
+      echo "--- Журнал TURN (coturn)"
+      { compose logs --no-color --tail=60 coturn 2>&1 | grep -iv 'secret' | mask_ips; } || true
+    } >"$report"
+  )
+  chmod 600 "$report"
+}
+
+cmd_voice_check() {
+  start_log voice-check
+  require_repo
+  require_env
+  local report="${LOG_DIR}/voice-check-report.txt"
+  VOICE_REQUESTS=""
+  VOICE_REPLIES=""
+  step "Проверка голоса на сервере"
+  voice_check_server
+  voice_check_traffic
+  step "Сохранение отчёта"
+  write_voice_report "$report"
+  echo
+  log_line "Проверка завершена. Отчёт без паролей, адреса участников скрыты: ${report}"
+  echo "  Показать его: cat ${report}"
+  echo "  Если причина не нашлась, приложите к вопросу разработчикам этот отчёт и отчёт участника:"
+  echo "  находясь в канале, откройте в Hooba настройки → «Настройки звука» → «Отладка WebRTC» → «Скопировать отчёт»."
+}
+
 cmd_logs() {
   require_repo
   require_env
@@ -1403,6 +1607,7 @@ menu_entries() {
     "|rollback|Откатить последнее обновление" \
     "Журналы и проверка|logs|Журнал сервера (выход — Ctrl+C)" \
     "|validate|Проверить, что сервер отвечает" \
+    "|voice-check|Проверить голос: почему участники не слышат друг друга" \
     "Резервные копии|backup|Сделать резервную копию" \
     "|restore|Восстановить из копии" \
     "Настройки|uploads-quota|Место под картинки чата" \
@@ -1476,6 +1681,7 @@ Hooba — установка и обслуживание сервера.
   repair          перезапустить всё заново (данные не трогаются)
   logs [сервис]   журнал: backend, web, postgres или coturn (выход — Ctrl+C)
   validate        проверить, что сервер отвечает
+  voice-check     найти, почему не работает голос, и собрать отчёт без паролей
 
 Резервные копии (папка backups/)
   backup          копия базы, настроек и картинок чата (--no-uploads — без картинок)
@@ -1509,7 +1715,7 @@ main() {
       usage
       return 0
       ;;
-    menu | install | start | stop | status | validate | update | rollback | repair | backup | restore | uploads-quota | cert-hooks | logs) ;;
+    menu | install | start | stop | status | validate | voice-check | update | rollback | repair | backup | restore | uploads-quota | cert-hooks | logs) ;;
     *)
       echo "Неизвестная команда: ${sub}"
       echo
@@ -1527,6 +1733,7 @@ main() {
     stop) cmd_stop ;;
     status) cmd_status ;;
     validate) cmd_validate ;;
+    voice-check) cmd_voice_check ;;
     update) cmd_update ;;
     rollback) cmd_rollback ;;
     repair) cmd_repair ;;
