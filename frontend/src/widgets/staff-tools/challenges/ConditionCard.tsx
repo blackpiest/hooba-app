@@ -7,6 +7,7 @@ import { CheckList, CheckListItem } from "@/shared/ui/check-list";
 import { useAvatarStore } from "@/stores/avatar-store";
 import { useChannelStore } from "@/stores/channel-store";
 import { AmountField, LocalHourField } from "./fields";
+import { GamePicker } from "./GamePicker";
 
 const KINDS: CosmeticKind[] = ["frame", "background", "character", "badge", "title"];
 
@@ -147,18 +148,8 @@ function ConditionFields({
         <>
           <FieldPair>
             <HoursField minutes={condition.minutes} isDisabled={isDisabled} onChange={(minutes) => patch({ minutes })} />
-            <TextField
-              label="Игры"
-              placeholder="Пусто — любые игры"
-              hint="Через запятую, как в «Играет в …»"
-              defaultValue={condition.games?.join(", ") ?? ""}
-              isDisabled={isDisabled}
-              onChange={(text) => {
-                const games = text.split(",").map((game) => game.trim()).filter(Boolean);
-                patch({ games: games.length > 0 ? games : undefined });
-              }}
-            />
           </FieldPair>
+          <GamePicker value={condition.games} isDisabled={isDisabled} onChange={(games) => patch({ games })} />
           <PeriodFields condition={condition} isDisabled={isDisabled} onChange={patch} />
         </>
       );

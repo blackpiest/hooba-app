@@ -1,25 +1,25 @@
-# Безопасность
+# Security
 
-## Как сообщить об уязвимости
+## Reporting a vulnerability
 
-**Не создавайте публичный issue** — пока уязвимость не исправлена, её описание может прочитать любой.
+**Do not open a public issue**: until the vulnerability is fixed, anyone could read its description.
 
-Сообщите приватно: вкладка **Security** → **Report a vulnerability** ([ссылка](https://github.com/blackpiest/hooba-app/security/advisories/new)). Отчёт увидит только автор проекта.
+Report it privately: **Security** tab → **Report a vulnerability** ([link](https://github.com/blackpiest/hooba-app/security/advisories/new)). Only the project author will see your report.
 
-Что указать:
+Please include:
 
-- версию — вывод `git -C /opt/hooba log -1 --oneline` (строка вида `release: main@abc1234`);
-- что можно сделать с помощью уязвимости и кто может это сделать (гость без входа, участник, модератор);
-- шаги воспроизведения.
+- the version: the output of `git -C /opt/hooba log -1 --oneline` (a line like `release: main@abc1234`);
+- what the vulnerability allows and who can exploit it (an unauthenticated visitor, a member, a moderator);
+- steps to reproduce.
 
-**Не прикладывайте** файл `.env.prod`, пароли, токены, ключи TURN, резервные копии базы и переписку участников — ни свои, ни чужие. Для отчёта они не нужны: если без примера данных не обойтись, придумайте их.
+**Do not attach** the `.env.prod` file, passwords, tokens, TURN keys, database backups or members' messages, whether yours or anyone else's. A report does not need them: if you have to show sample data, make it up.
 
-## Что дальше
+## What happens next
 
-Автор подтвердит получение отчёта, проверит его и сообщит, когда выйдет исправление. Исправление выходит в обычном обновлении: владельцы серверов получают его командой `hooba update`. Подробности уязвимости публикуются после выхода исправления.
+The author will confirm receipt of your report, review it and let you know when a fix is released. Fixes ship in regular updates: server owners get them by running `hooba update`. Details of the vulnerability are published after the fix is released.
 
-## Поддерживаемые версии
+## Supported versions
 
-Исправления выходят только для последней версии из ветки `main`. Если ваш сервер давно не обновлялся, сначала выполните `hooba update` и проверьте, воспроизводится ли проблема.
+Fixes are released only for the latest version on the `main` branch. If your server has not been updated for a while, run `hooba update` first and check whether the problem still reproduces.
 
-Изменённые сборки и форки поддерживаются их авторами.
+Modified builds and forks are supported by their own authors.

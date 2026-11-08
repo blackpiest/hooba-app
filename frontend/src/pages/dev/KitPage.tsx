@@ -47,6 +47,7 @@ import {
   ProfilePlate,
   RoleBadge,
   SegmentedControl,
+  ComboBox,
   Select,
   Skeleton,
   Spinner,
@@ -134,7 +135,7 @@ const SECTIONS: { id: string; title: string; ready: boolean }[] = [
   { id: "button", title: "Button / IconButton", ready: true },
   { id: "fields", title: "TextField / Textarea", ready: true },
   { id: "toggles", title: "Checkbox / Radio / Switch", ready: true },
-  { id: "select", title: "Select", ready: true },
+  { id: "select", title: "Select / ComboBox", ready: true },
   { id: "slider", title: "Slider", ready: true },
   { id: "badges", title: "Badge / Counter / Tag / RoleBadge / Kbd", ready: true },
   { id: "avatar", title: "Avatar / AvatarStack / PresenceDot", ready: true },
@@ -1171,6 +1172,8 @@ function SelectSliderDemo() {
       <Select label="Динамики" options={MICROPHONES} value={null} placeholder="Не выбрано" />
       <Select label="Ошибка" options={MICROPHONES} value={null} error="Нужно выбрать устройство" isRequired />
       <Select label="Заблокировано" options={MICROPHONES} value="razer" isDisabled />
+
+      <ComboBox label="Поиск по списку" placeholder="Начните вводить" hint="Свой текст не принимается" options={MICROPHONES.map((item) => ({ value: item.value, label: String(item.label) }))} onSelect={setMic} />
 
       <Slider label="Громкость участника (двойной клик — 100%)" value={volume} onChange={setVolume} resetValue={100} minValue={0} maxValue={200} formatValue={(v) => `${v}%`} />
       <Slider label="Порог микрофона" value={threshold} onChange={setThreshold} minValue={0} maxValue={100} formatValue={(v) => `−${100 - v} dB`} />

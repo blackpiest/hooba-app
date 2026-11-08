@@ -14,6 +14,7 @@ export { Checkbox, type CheckboxProps } from "./checkbox";
 export { Radio, RadioGroup, type RadioProps, type RadioGroupProps } from "./radio";
 export { Switch, type SwitchProps } from "./switch";
 export { Select, type SelectOption, type SelectProps } from "./select";
+export { ComboBox, type ComboBoxOption, type ComboBoxProps } from "./combo-box";
 export { Slider, type SliderProps } from "./slider";
 export { Avatar, AvatarStack, PresenceDot, type AvatarLook, type AvatarProps, type AvatarSize } from "./avatar";
 export { ServerIcon, type ServerIconProps, type ServerIconSize } from "./server-icon";

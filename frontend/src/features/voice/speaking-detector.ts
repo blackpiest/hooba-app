@@ -1,6 +1,21 @@
-const SPEAK_ON = 0.022;
-const SPEAK_OFF = 0.012;
-const HOLD_MS = 360;
+export const SPEAK_ON = 0.022;
+export const SPEAK_OFF = 0.012;
+/** Сколько тишины после последнего громкого замера, прежде чем погасить индикатор. */
+export const HOLD_MS = 360;
+
+export type SpeakingHoldState = {
+  speaking: boolean;
+  lastLoudAt: number;
+};
+
+/** Один замер уровня. Короткая пауза между словами индикатор не гасит: удержание идёт от последнего громкого замера. */
+export function stepSpeakingHold(state: SpeakingHoldState, rms: number, now: number): SpeakingHoldState {
+  const lastLoudAt = rms > SPEAK_OFF ? now : state.lastLoudAt;
+  if (!state.speaking) {
+    return { speaking: rms >= SPEAK_ON, lastLoudAt };
+  }
+  return { speaking: now - lastLoudAt < HOLD_MS, lastLoudAt };
+}
 
 type SpeakingDetector = {
   /** Уровень после громкости микрофона, в том же AudioContext, что и исходящий поток. */
@@ -26,14 +41,13 @@ export function createSpeakingDetector(options: {
   let fallbackSource: MediaStreamAudioSourceNode | null = null;
   let speaking = false;
   let muted = false;
-  let changedAt = 0;
+  let lastLoudAt = 0;
 
   function emit(next: boolean) {
     if (next === speaking) {
       return;
     }
     speaking = next;
-    changedAt = Date.now();
     options.onChange(next);
   }
 
@@ -135,14 +149,9 @@ export function createSpeakingDetector(options: {
       sum += sample * sample;
     }
     const rms = Math.sqrt(sum / samples.length);
-    const now = Date.now();
-    if (!speaking && rms >= SPEAK_ON) {
-      emit(true);
-      return;
-    }
-    if (speaking && rms <= SPEAK_OFF && now - changedAt >= HOLD_MS) {
-      emit(false);
-    }
+    const step = stepSpeakingHold({ speaking, lastLoudAt }, rms, Date.now());
+    lastLoudAt = step.lastLoudAt;
+    emit(step.speaking);
   }, 80);
 
   return {
