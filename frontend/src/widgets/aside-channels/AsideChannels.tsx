@@ -63,6 +63,8 @@ interface AsideChannelsProps {
   onChannelDeleted?: (channelId: number) => void;
   /** Открыть окно жалобы на участника (пункт «Пожаловаться» в меню голосовой комнаты). */
   onReportMember?: (member: UserDirectoryEntry, point: { x: number; y: number }) => void;
+  /** Нажат текстовый канал — в т.ч. уже открытый (на телефоне вернуться из списка в чат). */
+  onTextChannelOpen?: () => void;
 }
 
 /** Мемоизирован: оболочка перерисовывается от presence и прочего, сайдбару это не нужно. */
@@ -74,6 +76,7 @@ export const AsideChannels = memo(function AsideChannels({
   members,
   onChannelDeleted,
   onReportMember,
+  onTextChannelOpen,
 }: AsideChannelsProps) {
   const navigate = useNavigate();
   const liveChannelId = useVoiceStore((s) => s.activeChannelId);
@@ -345,6 +348,7 @@ export const AsideChannels = memo(function AsideChannels({
                         if (screen.watchingChannelId != null || screen.hostView === "stage") {
                           screen.collapseToPip();
                         }
+                        onTextChannelOpen?.();
                       }}
                       trailing={
                         <ChannelCue

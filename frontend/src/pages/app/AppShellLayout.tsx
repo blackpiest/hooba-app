@@ -272,7 +272,7 @@ export function AppShellLayout() {
   const [mobilePane, setMobilePane] = useState<MobilePane>(() => paneForPath(location.pathname));
   const [paneLocationKey, setPaneLocationKey] = useState(location.key);
   if (paneLocationKey !== location.key) {
-    // Переход по каналу (в т.ч. повторный тап по открытому) открывает чат на телефоне.
+    // Переход по каналу открывает чат на телефоне (повторный тап по открытому — `showChannelContent`).
     setPaneLocationKey(location.key);
     setMobilePane(paneForPath(location.pathname));
   }
@@ -812,6 +812,8 @@ export function AppShellLayout() {
     }
   }, [wide]);
   const openChannels = useCallback(() => setMobilePane("channels"), []);
+  // Тап по уже открытому каналу маршрут не меняет — возвращаем чат явно.
+  const showChannelContent = useCallback(() => setMobilePane("content"), []);
   const showMembers = wide ? membersOpen : mobilePane === "members";
   const outletContext = useMemo(
     () =>
@@ -1009,6 +1011,7 @@ export function AppShellLayout() {
             members={members}
             onChannelDeleted={onChannelDeleted}
             onReportMember={onReportMember}
+            onTextChannelOpen={showChannelContent}
           />
           <AnnouncementDialog />
           {myInvitesOpen && invitesEnabled ? <MyInvitesDialog onClose={() => setMyInvitesOpen(false)} /> : null}
