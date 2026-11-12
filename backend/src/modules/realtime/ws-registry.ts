@@ -10,7 +10,7 @@ export type AuthedMeta = {
   userId: number;
   username: string;
   joinedChannelId: number | null;
-  sessionId: number | null;
+  sessionId: number;
   sessionVersion: number;
   accessExpMs: number;
 };

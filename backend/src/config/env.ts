@@ -88,6 +88,28 @@ export type Env = BaseEnv & {
   setupTokenGenerated: boolean;
 };
 
+/**
+ * Заглушки из `env.prod.example`, `backend/.env.example` и dev-compose лежат в публичном репо:
+ * с ними любой подпишет токен владельца или пройдёт /setup. В production такой сервер не стартует.
+ */
+const PLACEHOLDER_MARKERS = ['замените', 'change-me', 'changeme', 'dev-only', 'dev-turn-auth-secret'];
+
+export function assertNoPlaceholderSecrets(values: Record<string, string>): void {
+  const bad = Object.entries(values)
+    .filter(([, value]) => {
+      const lower = value.toLowerCase();
+      return PLACEHOLDER_MARKERS.some((marker) => lower.includes(marker));
+    })
+    .map(([name]) => name);
+  if (bad.length > 0) {
+    throw new Error(
+      `${bad.join(', ')}: placeholder value from an example file. ` +
+        'Replace them in .env.prod with random values (`openssl rand -hex 32`) and recreate the containers ' +
+        '(`hooba repair`). install.sh keeps existing values, so re-running it will not help.',
+    );
+  }
+}
+
 export function loadEnv(): Env {
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
@@ -108,6 +130,14 @@ export function loadEnv(): Env {
   const turnRaw = data.TURN_AUTH_SECRET?.trim() ?? '';
   if (turnRaw.length > 0 && turnRaw.length < 16) {
     throw new Error('TURN_AUTH_SECRET must be at least 16 characters');
+  }
+  if (data.NODE_ENV === 'production') {
+    assertNoPlaceholderSecrets({
+      JWT_SECRET: data.JWT_SECRET,
+      SETUP_TOKEN: setupRaw,
+      TURN_AUTH_SECRET: turnRaw,
+      DATABASE_URL: data.DATABASE_URL,
+    });
   }
   const setupTokenGenerated = setupRaw.length === 0;
   const setupToken = setupTokenGenerated ? randomBytes(24).toString('base64url') : setupRaw;

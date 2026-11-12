@@ -180,20 +180,6 @@ export async function registerChannelsRoutes(app: FastifyInstance): Promise<void
   );
 
   app.post(
-    '/api/v1/channels/:id/join',
-    { preHandler: requireAuth },
-    async (request, reply) => {
-      const userId = request.auth?.userId;
-      if (userId === undefined) {
-        throw new AppError('UNAUTHORIZED', 401, 'Missing authentication');
-      }
-      const id = parseIdParam(request.params, 'channel');
-      await channelsService.joinChannel(id, userId);
-      return reply.send(ok({ ok: true }));
-    },
-  );
-
-  app.post(
     '/api/v1/channels/:id/leave',
     { preHandler: requireAuth },
     async (request, reply) => {

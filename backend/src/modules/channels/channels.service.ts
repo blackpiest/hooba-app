@@ -464,30 +464,6 @@ export async function softDeleteChannel(channelId: number, actorId: number): Pro
   });
 }
 
-export async function joinChannel(channelId: number, userId: number): Promise<void> {
-  const ch = await prisma.channel.findFirst({
-    where: { id: channelId, isDeleted: false, ...channelVisibleWhere(userId) },
-  });
-  if (!ch) {
-    throw new AppError('NOT_FOUND', 404, 'Channel not found');
-  }
-  try {
-    await prisma.channelMember.create({
-      data: { channelId, userId },
-    });
-  } catch (e: unknown) {
-    if (
-      typeof e === 'object' &&
-      e !== null &&
-      'code' in e &&
-      (e as { code: string }).code === 'P2002'
-    ) {
-      return;
-    }
-    throw e;
-  }
-}
-
 export async function leaveChannel(channelId: number, userId: number): Promise<void> {
   const channel = await prisma.channel.findFirst({
     where: { id: channelId, isDeleted: false },

@@ -25,23 +25,16 @@ export async function createRefreshSession(
   return row.id;
 }
 
-/** null sid — старый access без привязки к строке сессии, его здесь не отклоняем. */
-export async function assertRefreshSessionActive(sessionId: number | null): Promise<void> {
+export async function assertRefreshSessionActive(sessionId: number): Promise<void> {
   const row = await loadRefreshSession(sessionId);
-  if (row === 'unbound') {
-    return;
-  }
   if (!row || row.revokedAt || row.expiresAt <= new Date()) {
     throw new AppError('SESSION_REVOKED', 401, 'Session is no longer valid');
   }
 }
 
 /** Сокет ещё можно держать: сессия жива либо её только что сменила ротация refresh. */
-export async function assertRefreshSessionBound(sessionId: number | null): Promise<void> {
+export async function assertRefreshSessionBound(sessionId: number): Promise<void> {
   const row = await loadRefreshSession(sessionId);
-  if (row === 'unbound') {
-    return;
-  }
   if (!row || row.expiresAt <= new Date()) {
     throw new AppError('SESSION_REVOKED', 401, 'Session is no longer valid');
   }
@@ -55,11 +48,8 @@ export async function assertRefreshSessionBound(sessionId: number | null): Promi
 }
 
 async function loadRefreshSession(
-  sessionId: number | null,
-): Promise<{ revokedAt: Date | null; expiresAt: Date } | 'unbound' | null> {
-  if (sessionId === null) {
-    return 'unbound';
-  }
+  sessionId: number,
+): Promise<{ revokedAt: Date | null; expiresAt: Date } | null> {
   return prisma.refreshSession.findUnique({
     where: { id: sessionId },
     select: { revokedAt: true, expiresAt: true },

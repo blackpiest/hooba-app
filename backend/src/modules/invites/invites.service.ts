@@ -142,6 +142,14 @@ export async function listInvitesForStaff(): Promise<
   }));
 }
 
+/**
+ * Журнал модерации читает любой staff, а STAFF-коды видит только OWNER.
+ * Полный код в журнал не пишем: по нему ADMIN зарегистрировал бы чужую учётку.
+ */
+export function inviteLogLabel(id: number, code: string): string {
+  return `#${id} · ${code.slice(0, 4)}…`;
+}
+
 export async function createInvite(
   createdById: number,
   expiresAt: Date | null,
@@ -159,7 +167,7 @@ export async function createInvite(
       data: {
         actorId: createdById,
         action: 'INVITE_CREATE',
-        reason: created.code,
+        reason: inviteLogLabel(created.id, created.code),
       },
     });
     return created;
@@ -213,7 +221,7 @@ export async function revokeInvite(inviteId: number, actorId: number): Promise<v
       data: {
         actorId,
         action: 'INVITE_DELETE',
-        reason: `${row.code} · создал ${row.createdBy.username}`,
+        reason: `${inviteLogLabel(row.id, row.code)} · создал ${row.createdBy.username}`,
       },
     }),
   ]);

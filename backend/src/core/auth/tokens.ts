@@ -5,8 +5,8 @@ export type AccessTokenClaims = {
   userId: number;
   username: string;
   sessionVersion: number;
-  /** id строки RefreshSession. null — токен, выпущенный до появления sid. */
-  sessionId: number | null;
+  /** id строки RefreshSession. Токен без sid не принимается: его не отозвать выходом или баном. */
+  sessionId: number;
   expiresAtMs: number;
 };
 
@@ -27,9 +27,9 @@ export async function signAccessToken(
     .sign(secret);
 }
 
-function readSessionId(value: unknown): number | null {
+function readSessionId(value: unknown): number {
   if (typeof value !== 'number' || !Number.isInteger(value) || value <= 0) {
-    return null;
+    throw new Error('missing sid');
   }
   return value;
 }
