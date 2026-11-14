@@ -8,7 +8,15 @@ import {
   getVoiceMediasoupHandle,
   useVoiceSettingsStore,
 } from "../voice-settings/voice-settings";
-import type { VoiceMediasoupHandle } from "../webrtc-voice.types";
+import type { VoiceConnectionProblemInfo, VoiceMediasoupHandle } from "../webrtc-voice.types";
+import {
+  forcedRelayRoute,
+  forgetRelay,
+  isRelayForced,
+  rememberedRelayRoute,
+  rememberRelay,
+  type VoiceIceRoute,
+} from "../voice-ice-route";
 import {
   discardPrimedVoiceAudioContext,
   primeVoiceAudioFromUserGesture,
@@ -28,20 +36,35 @@ import {
   playVoiceUnmutedSound,
 } from "../voice-channel-sounds";
 
+/**
+ * Звук голоса: `connecting` — ждём первого соединения транспорта, `rerouting` — прямой путь не прошёл,
+ * пробуем следующий шаг каскада (`voice-ice-route.ts`), `connected` — звук идёт, `idle` — не в голосе.
+ * Без этого участник 5–20 с сидит в тишине при «зелёной» панели и не понимает, что происходит.
+ */
+export type VoiceMediaStatus = "idle" | "connecting" | "rerouting" | "connected";
+
 type VoiceSessionUiState = {
   error: string | null;
   /** Голосовой канал, к которому пользователь подключён или подключается. */
   intendedChannelId: number | null;
+  mediaStatus: VoiceMediaStatus;
   setError: (error: string | null) => void;
   setIntendedChannelId: (channelId: number | null) => void;
+  setMediaStatus: (status: VoiceMediaStatus) => void;
 };
 
 export const useVoiceSessionUi = create<VoiceSessionUiState>((set) => ({
   error: null,
   intendedChannelId: null,
+  mediaStatus: "idle",
   setError: (error) => set({ error }),
   setIntendedChannelId: (channelId) => set({ intendedChannelId: channelId }),
+  setMediaStatus: (mediaStatus) => set({ mediaStatus }),
 }));
+
+function setVoiceMediaStatus(status: VoiceMediaStatus) {
+  useVoiceSessionUi.getState().setMediaStatus(status);
+}
 
 function getIntendedVoiceChannelId(): number | null {
   return useVoiceSessionUi.getState().intendedChannelId;
@@ -88,6 +111,7 @@ function stopLocalVoiceMedia() {
   dropCarriedScreenShare(false);
   discardPrimedVoiceAudioContext();
   clearLocalVoiceMedia();
+  setVoiceMediaStatus("idle");
 }
 
 /** Переподключение к той же комнате не обрывает показ: захват переносим в новый handle. */
@@ -143,9 +167,61 @@ async function resumeCarriedScreenShare(h: VoiceMediasoupHandle, gen: number) {
   }
 }
 
-function startMediasoupForChannel(channelId: number) {
+function defaultVoiceRoute(): VoiceIceRoute {
+  return forcedRelayRoute() ?? rememberedRelayRoute() ?? "direct";
+}
+
+/**
+ * Сеть сломана с самого входа — один шаг каскада `direct → relay → relay-tls` (`voice-ice-route.ts`),
+ * рабочий маршрут запоминается для сети на сутки. Шагов больше нет — ошибка, без повторов.
+ * Обрыв посреди разговора (`fresh: false`) маршрут не меняет.
+ */
+function handleVoiceMediaProblem(
+  channelId: number,
+  gen: number,
+  failed: boolean,
+  info: VoiceConnectionProblemInfo
+) {
+  if (gen !== voiceMsGen) {
+    return;
+  }
+  if (!failed) {
+    setVoiceMediaFailed(false);
+    setVoiceMediaStatus("connected");
+    return;
+  }
+  console.warn(
+    `[voice] media problem reason=${info.reason} route=${info.route} next=${info.nextRoute ?? "none"} fresh=${String(info.fresh)} relayAvailable=${String(info.relayAvailable)}`
+  );
+  const next = info.nextRoute;
+  if (
+    next !== null &&
+    next !== "direct" &&
+    info.fresh &&
+    getIntendedVoiceChannelId() === channelId &&
+    // Ручной режим (forceRelay) проверяет ровно заданный маршрут, без каскада.
+    !isRelayForced()
+  ) {
+    rememberRelay(next);
+    startMediasoupForChannel(channelId, next, true);
+    return;
+  }
+  if (info.route !== "direct" && !isRelayForced()) {
+    forgetRelay();
+  }
+  // Ошибку показывает панель (VOICE_MEDIA_FAILED_TEXT), «Подключение…» рядом с ней не нужно.
+  setVoiceMediaStatus("idle");
+  setVoiceMediaFailed(true);
+}
+
+function startMediasoupForChannel(
+  channelId: number,
+  route: VoiceIceRoute = defaultVoiceRoute(),
+  rerouting = false
+) {
   voiceMsGen += 1;
   const gen = voiceMsGen;
+  setVoiceMediaStatus(rerouting ? "rerouting" : "connecting");
   carryScreenShare(channelId);
   void (async () => {
     try {
@@ -153,6 +229,7 @@ function startMediasoupForChannel(channelId: number) {
       const { startVoiceMediasoup } = await import("../webrtc-voice");
       const { inputDeviceId, outputDeviceId } = getVoiceDeviceIds();
       const h = await startVoiceMediasoup(channelId, {
+        route,
         inputDeviceId: inputDeviceId || null,
         outputDeviceId: outputDeviceId || null,
         onSpeaking: (speaking) => {
@@ -164,9 +241,12 @@ function startMediasoupForChannel(channelId: number) {
         onRemoteHearing: (userId, hearing) => {
           useVoiceStore.getState().setInboundHearing(userId, hearing);
         },
-        onConnectionProblem: (failed) => {
+        onConnectionProblem: (failed, info) => {
+          handleVoiceMediaProblem(channelId, gen, failed, info);
+        },
+        onMediaConnected: () => {
           if (gen === voiceMsGen) {
-            setVoiceMediaFailed(failed);
+            setVoiceMediaStatus("connected");
           }
         },
       });
@@ -186,6 +266,18 @@ function startMediasoupForChannel(channelId: number) {
       }
       void resumeCarriedScreenShare(h, gen);
     } catch (e: unknown) {
+      if (
+        gen === voiceMsGen &&
+        route !== "direct" &&
+        e instanceof Error &&
+        e.message === "VOICE_RELAY_UNAVAILABLE" &&
+        !isRelayForced()
+      ) {
+        // Запомненный relay, а сервер больше не выдаёт turns: — обычный путь.
+        forgetRelay();
+        startMediasoupForChannel(channelId, "direct");
+        return;
+      }
       if (gen === voiceMsGen) {
         dropCarriedScreenShare(true);
         stopLocalVoiceMedia();
@@ -195,7 +287,9 @@ function startMediasoupForChannel(channelId: number) {
           .setError(
             m === "MEDIASOUP_UNAVAILABLE"
               ? "Голос SFU на сервере выключен (нет mediasoup worker). Вход и чат работают."
-              : m || "mediasoup"
+              : m === "VOICE_RELAY_UNAVAILABLE"
+                ? "Включён голос только через TURN (hooba.voice.forceRelay), но сервер не выдаёт подходящий адрес TURN."
+                : m || "mediasoup"
           );
         useVoiceSettingsStore.getState().setHideDebug(true);
       }

@@ -13,4 +13,5 @@ RUN pnpm run build
 
 FROM nginx:1.27-alpine
 COPY infra/docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY infra/docker/nginx/turns.conf.stream-template /etc/nginx/templates/turns.conf.stream-template
 COPY --from=frontend-build /app/dist /usr/share/nginx/html

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { IconButton, Tooltip } from "@/shared/ui";
+import { IconButton, LoadingDots, Tooltip } from "@/shared/ui";
 import { cx } from "@/utils/cx";
 import { leaveVoiceChannel, useVoiceSessionUi } from "./voice-session";
 import { getVoiceMediasoupHandle } from "../voice-settings/voice-settings";
@@ -109,22 +109,36 @@ function VoiceConnectionPanel({
 }) {
   const micLocked = serverMuted || speakDenied;
   const micLockedLabel = serverMuted ? "Микрофон отключён администратором" : "У вас нет права говорить в этом канале";
+  const mediaStatus = useVoiceSessionUi((s) => s.mediaStatus);
   const pingMs = useVoicePingMs();
+  // Пока звук не пошёл, пинга нет, а зелёная рамка обещала бы связь, которой ещё нет.
+  const connecting = !error && (mediaStatus === "connecting" || mediaStatus === "rerouting");
   const tone = pingMs == null ? "good" : voicePingTone(pingMs);
   // Фон нейтральный; качество связи показывают обводка и значение пинга.
   const pingToneClass = tone === "bad" ? "text-danger" : tone === "mid" ? "text-warning" : "text-success";
-  const borderToneClass = tone === "bad" ? "border-danger/45" : tone === "mid" ? "border-warning/45" : "border-success/45";
+  const borderToneClass = connecting
+    ? "ds-border-pulse"
+    : tone === "bad"
+      ? "border-danger/45"
+      : tone === "mid"
+        ? "border-warning/45"
+        : "border-success/45";
   return (
     <div className={cx("mx-2 mb-2 border bg-surface px-2 py-2", borderToneClass)}>
       <div className="flex items-baseline justify-between gap-2">
         <p className="font-label text-[10px] uppercase text-muted">Голосовая связь</p>
-        {pingMs != null ? (
+        {connecting ? (
+          <LoadingDots tone="muted" label="Подключение к голосу" className="self-center" />
+        ) : pingMs != null ? (
           <p className={cx("font-label text-[10px] tabular-nums", pingToneClass)} aria-label={`Пинг ${pingMs} миллисекунд`}>
             {pingMs} мс
           </p>
         ) : null}
       </div>
       <p className="truncate text-sm font-medium text-fg">{channelName}</p>
+      {connecting && mediaStatus === "rerouting" ? (
+        <p className="mt-1 text-xs text-muted">Напрямую не получилось — пробуем запасной путь</p>
+      ) : null}
       {error ? <p className="mt-1 text-xs text-danger">{error}</p> : null}
       <div className="mt-2 flex gap-1">
         <Tooltip content={micLocked ? micLockedLabel : undefined} plain>

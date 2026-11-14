@@ -1,10 +1,15 @@
 import type { SignalingDebug } from '../../shared/ws/app-realtime';
+import type { VoiceIceRoute } from './voice-ice-route';
 
 export type IceReportSnapshot = {
   connectionState: string;
   candidateType: string | null;
   protocol: string | null;
+  /** У relay-кандидата — как клиент дошёл до TURN: `udp` / `tcp` / `tls`. */
+  relayProtocol: string | null;
   rttMs: number | null;
+  /** `RTCTransportStats.dtlsState`: `closed`/`failed` при живом ICE — медиа не идёт. */
+  dtlsState: string | null;
 };
 
 export type PlaybackSinkState = 'pending' | 'ok' | 'fail' | 'unsupported';
@@ -36,6 +41,10 @@ export type VoiceIncidentSnapshot = {
   ws: SignalingDebug;
   send: IceReportSnapshot;
   recv: IceReportSnapshot;
+  route: {
+    mode: VoiceIceRoute;
+    relayAvailable: boolean;
+  };
   outbound: {
     producerId: string | null;
     paused: boolean;
@@ -72,6 +81,10 @@ function ice(value: string | null): string {
   return value ?? 'n/a';
 }
 
+function via(value: string | null): string {
+  return value ? ` via=${value}` : '';
+}
+
 function id(value: number | string | null): string {
   return value === null ? 'n/a' : String(value);
 }
@@ -91,8 +104,9 @@ export function formatVoiceIncidentReport(snapshot: VoiceIncidentSnapshot): stri
     `user: ${id(snapshot.userId)}`,
     `channel: ${snapshot.channelId}`,
     `ws: ready=${snapshot.ws.readyState} identified=${String(snapshot.ws.identified)} pongAgeMs=${num(snapshot.ws.pongAgeMs)} reconnects=${snapshot.ws.reconnects}`,
-    `send: state=${snapshot.send.connectionState} ice=${ice(snapshot.send.candidateType)} proto=${ice(snapshot.send.protocol)} rttMs=${num(snapshot.send.rttMs)}`,
-    `recv: state=${snapshot.recv.connectionState} ice=${ice(snapshot.recv.candidateType)} proto=${ice(snapshot.recv.protocol)} rttMs=${num(snapshot.recv.rttMs)}`,
+    `send: state=${snapshot.send.connectionState} ice=${ice(snapshot.send.candidateType)} proto=${ice(snapshot.send.protocol)}${via(snapshot.send.relayProtocol)} rttMs=${num(snapshot.send.rttMs)} dtls=${ice(snapshot.send.dtlsState)}`,
+    `recv: state=${snapshot.recv.connectionState} ice=${ice(snapshot.recv.candidateType)} proto=${ice(snapshot.recv.protocol)}${via(snapshot.recv.relayProtocol)} rttMs=${num(snapshot.recv.rttMs)} dtls=${ice(snapshot.recv.dtlsState)}`,
+    `route: mode=${snapshot.route.mode} relayAvailable=${String(snapshot.route.relayAvailable)}`,
     `outbound: producer=${id(snapshot.outbound.producerId)} paused=${String(snapshot.outbound.paused)} trackMuted=${String(snapshot.outbound.trackMuted)} ctx=${snapshot.outbound.audioContextState} capture=${snapshot.outbound.capturePath} vad=${snapshot.outbound.speechModel} render=${snapshot.outbound.renderLive === null ? 'n/a' : snapshot.outbound.renderLive ? 'yes' : 'no'} inPeak=${peak(snapshot.outbound.inputPeak)} bytesSent2s=${num(snapshot.outbound.bytesSent2s)}`,
     `playback: volumeOut=${snapshot.playback.outputVolume} deafened=${String(snapshot.playback.deafened)} playbackCtx=${snapshot.playback.playbackContextState}`,
   ];

@@ -1,5 +1,7 @@
 /** Типы UI/отладки без зависимости на mediasoup-client — импортируйте из этого файла в страницах. */
 
+import type { VoiceIceRoute } from './voice-ice-route';
+
 export type VoiceMediasoupOptions = {
   /** `null` / не задано — микрофон по умолчанию ОС. */
   inputDeviceId?: string | null;
@@ -9,8 +11,31 @@ export type VoiceMediasoupOptions = {
   onSpeaking?: (speaking: boolean) => void;
   /** Чужое кольцо: до этого клиента дошла энергия RTP. Не путать с `voice:speaking`. */
   onRemoteHearing?: (userId: number, hearing: boolean) => void;
-  /** `true` — транспорт не соединился с сервером и звук не идёт; `false` — связь восстановилась. */
-  onConnectionProblem?: (failed: boolean) => void;
+  /**
+   * `true` — звук не идёт: транспорт не соединился (`connect`) или DTLS закрылся при живом ICE (`dtls`);
+   * `false` — связь восстановилась. `nextRoute` — следующий шаг каскада или `null`.
+   */
+  onConnectionProblem?: (failed: boolean, info: VoiceConnectionProblemInfo) => void;
+  /** Первый транспорт соединился (ICE и DTLS) — звук пошёл. Вызывается один раз за запуск. */
+  onMediaConnected?: () => void;
+  /**
+   * `relay` — только TURN (`turn:` по UDP и `turns:`), `relay-tls` — только `turns:`; без прямого пути.
+   * По умолчанию `direct`. Каскад — `voice-ice-route.ts`.
+   */
+  route?: VoiceIceRoute;
+};
+
+export type VoiceConnectionProblemInfo = {
+  reason: 'connect' | 'dtls';
+  route: VoiceIceRoute;
+  relayAvailable: boolean;
+  /** Куда переключиться при сломанном входе; `null` — пробовать больше нечего. */
+  nextRoute: VoiceIceRoute | null;
+  /**
+   * Проблема с самого входа: транспорт ни разу не соединился или DTLS оборвался в первые секунды.
+   * Только такой случай говорит о сломанной сети; обрыв посреди разговора (рестарт сервера) — нет.
+   */
+  fresh: boolean;
 };
 
 export type VoiceMediaDebug = {

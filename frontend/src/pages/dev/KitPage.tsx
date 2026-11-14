@@ -1134,6 +1134,8 @@ function DisplayDemo() {
           <Slime pose="empty" className="w-28" />
           <Slime pose="offline" className="w-28" />
           <LoadingDots />
+          <LoadingDots tone="muted" />
+          <span className="ds-border-pulse border px-3 py-2 text-xs text-muted">ds-border-pulse</span>
         </div>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div className="flex gap-3">

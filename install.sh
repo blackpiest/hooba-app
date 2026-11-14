@@ -567,29 +567,6 @@ issue_tls_cert() {
   [[ -f "/etc/letsencrypt/live/${host}/fullchain.pem" ]] || die "certbot отработал, но сертификата для ${host} нет в /etc/letsencrypt/live/."
 }
 
-# coturn в образе работает от nobody:nogroup (65534), а /etc/letsencrypt/{live,archive} — 0700 root.
-# Поэтому сертификат копируется в infra/docker/turn-tls с владельцем 65534 и монтируется в coturn.
-TURN_TLS_REL="infra/docker/turn-tls"
-TURN_TLS_UID=65534
-
-# Печатает sh-команды копирования сертификата из каталога live/<домен> (первый аргумент).
-turn_tls_copy_cmds() {
-  local src="$1" dst="${REPO_ROOT}/${TURN_TLS_REL}"
-  printf 'install -d -m 0700 -o %s -g %s %q\n' "$TURN_TLS_UID" "$TURN_TLS_UID" "$dst"
-  printf 'install -m 0444 -o %s -g %s %s/fullchain.pem %q/fullchain.pem\n' "$TURN_TLS_UID" "$TURN_TLS_UID" "$src" "$dst"
-  printf 'install -m 0400 -o %s -g %s %s/privkey.pem %q/privkey.pem\n' "$TURN_TLS_UID" "$TURN_TLS_UID" "$src" "$dst"
-}
-
-sync_turn_tls_certs() {
-  local domain lineage
-  domain="$(env_value PUBLIC_DOMAIN)"
-  [[ -n "$domain" ]] || die "В ${ENV_REL} нет PUBLIC_DOMAIN — не знаю, какой сертификат отдать coturn."
-  lineage="/etc/letsencrypt/live/${domain}"
-  [[ -f "${lineage}/privkey.pem" ]] || die "Не найден сертификат ${lineage}. Выпустите его заново: hooba install"
-  sh -c "$(turn_tls_copy_cmds "$(printf '%q' "$lineage")")"
-  log_line "Сертификат для голоса (TURNS) скопирован в ${TURN_TLS_REL}/."
-}
-
 # Сертификат выпущен через --standalone: при продлении certbot сам слушает :80,
 # а там уже контейнер nginx. Хуки освобождают порт и подхватывают новый сертификат.
 # Каталоги renewal-hooks certbot выполняет при любом renew (certbot.timer).
@@ -608,14 +585,9 @@ install_renewal_hooks() {
   compose_cmd="$(printf 'cd %q && docker compose --env-file %q -f %q' "$REPO_ROOT" "$ENV_REL" "$COMPOSE_REL")"
   write_renewal_hook pre "${compose_cmd} stop web"
   write_renewal_hook post "${compose_cmd} start web"
-  # deploy — только если сертификат реально обновился: coturn читает его один раз при старте.
-  # RENEWED_LINEAGE certbot передаёт сам; чужие сертификаты на этой машине пропускаем.
-  write_renewal_hook deploy "case \"\$RENEWED_LINEAGE\" in
-  */live/${domain}) ;;
-  *) exit 0 ;;
-esac
-$(turn_tls_copy_cmds '"$RENEWED_LINEAGE"')
-${compose_cmd} restart coturn"
+  # TURNS теперь обслуживает nginx (web): новый сертификат он берёт при start web выше.
+  # Старый deploy-хук копировал сертификат для coturn и перезапускал его — больше не нужен.
+  rm -f /etc/letsencrypt/renewal-hooks/deploy/hooba.sh
   log_line "Автопродление сертификата настроено (хуки в /etc/letsencrypt/renewal-hooks/)."
   check_renew_timer "$domain"
 }
@@ -719,7 +691,49 @@ ensure_prod_secrets() {
     set_env_value MEDIASOUP_ANNOUNCED_IP "$turn_ip"
     log_line "В ${ENV_REL} адрес для голоса заменён: ${announced} → ${turn_ip} (домен мешал голосу в части браузеров)."
   fi
+  sync_turn_relay_ip
   chmod 600 "$ENV_FILE"
+}
+
+# Есть ли адрес на сетевой карте этого сервера (а не только снаружи, у хостинга).
+ip_is_local() {
+  ip -4 -o addr show 2>/dev/null | awk '{ split($4, a, "/"); print a[1] }' | grep -qxF "$1"
+}
+
+# Адрес, с которого сервер выходит в интернет, — внутренний, если сервер за NAT хостинга.
+default_route_ip() {
+  ip -4 route get 1.1.1.1 2>/dev/null | awk '{ for (i = 1; i < NF; i++) if ($i == "src") { print $(i + 1); exit } }'
+}
+
+# coturn работает в сети сервера и открывает порты запасного пути голоса на IP из TURN_EXTERNAL_IP.
+# У части хостингов (1:1 NAT: AWS, Oracle Cloud, Яндекс Облако и др.) публичного IP на сервере нет,
+# есть только внутренний — тогда coturn не запустится. Для такого сервера пишем внутренний адрес
+# в TURN_RELAY_IP: coturn работает на нём, а участникам называет публичный. Вызывается при каждом
+# install/update/repair/start, поэтому смена хостинга или IP исправляется сама.
+sync_turn_relay_ip() {
+  [[ -f "$ENV_FILE" ]] || return 0
+  command -v ip >/dev/null 2>&1 || return 0
+  local pub current inner
+  pub="$(env_value TURN_EXTERNAL_IP)"
+  is_ipv4 "$pub" || return 0
+  current="$(env_value TURN_RELAY_IP)"
+  if ip_is_local "$pub"; then
+    if [[ -n "$current" ]]; then
+      set_env_value TURN_RELAY_IP ""
+      log_line "IP ${pub} теперь есть на самом сервере — отдельный внутренний адрес для голоса больше не нужен."
+    fi
+    return 0
+  fi
+  inner="$(default_route_ip)"
+  if ! is_ipv4 "$inner" || [[ "$inner" == "$pub" ]]; then
+    log_line "ВНИМАНИЕ: IP ${pub} не найден на этом сервере, и внутренний адрес определить не удалось. Запасной путь голоса (TURN) не заработает."
+    echo "  - адреса сервера: ip -4 addr"
+    echo "  - если ${pub} — IP другого сервера, укажите верный: hooba install"
+    return 0
+  fi
+  [[ "$current" == "$inner" ]] && return 0
+  set_env_value TURN_RELAY_IP "$inner"
+  log_line "Сервер за NAT хостинга: снаружи IP ${pub}, на самом сервере — ${inner}. Запасной путь голоса (TURN) будет работать на ${inner}, участникам по-прежнему сообщается ${pub}."
 }
 
 # Секрет из текущего .env.prod или новый. Пароль Postgres менять нельзя: база в томе
@@ -774,7 +788,6 @@ TURN_AUTH_SECRET=${turn_secret}
 TURN_PORT=${TURN_PORT}
 TURN_MIN_PORT=${TURN_MIN_PORT}
 TURN_MAX_PORT=${TURN_MAX_PORT}
-TURN_TLS_ENABLED=1
 TURN_TLS_PORT=${TURN_TLS_PORT}
 
 RTC_ICE_SERVERS_JSON=${ice_json}
@@ -1103,7 +1116,7 @@ cmd_install() {
   issue_tls_cert "$public_domain" "$owner_email"
   step "Запись настроек"
   write_env_prod "$public_domain" "$turn_ip" "$owner_email"
-  sync_turn_tls_certs
+  sync_turn_relay_ip
   install_renewal_hooks
   setup_firewall
   setup_auto_backup
@@ -1184,7 +1197,7 @@ mask_ips() {
 # Проверки, для которых не нужен участник: контейнеры, адреса, журнал mediasoup.
 # Журнал показывает разницу между «браузер не пытался» и «пытался, но соединения нет».
 voice_check_server() {
-  local svc running announced turn_ip host public_ip resolved logs attempts connected
+  local svc running announced turn_ip relay_ip host public_ip resolved logs attempts connected
   running="$(compose ps --status running --services 2>/dev/null || true)"
   for svc in backend coturn; do
     if grep -qx "$svc" <<<"$running"; then
@@ -1199,6 +1212,13 @@ voice_check_server() {
   public_ip="$(detect_public_ip)"
   if [[ -n "$public_ip" && "$public_ip" != "$turn_ip" ]]; then
     log_line "ВНИМАНИЕ: внешний IP сервера ${public_ip}, а в настройках голоса ${turn_ip}. Обновите адрес: hooba install"
+  fi
+  relay_ip="$(env_value TURN_RELAY_IP)"
+  if [[ -n "$relay_ip" ]]; then
+    log_line "Сервер за NAT хостинга: запасной путь голоса (TURN) работает на внутреннем адресе ${relay_ip}."
+  elif is_ipv4 "$turn_ip" && command -v ip >/dev/null 2>&1 && ! ip_is_local "$turn_ip"; then
+    log_line "ВНИМАНИЕ: IP ${turn_ip} не найден на этом сервере, а внутренний адрес для TURN не задан — запасной путь голоса не заработает."
+    echo "  Исправить (сайт и голос будут недоступны около минуты): hooba repair"
   fi
   if is_ipv4 "$announced"; then
     log_line "Адрес для голоса: ${announced}."
@@ -1329,8 +1349,8 @@ write_voice_report() {
       echo
       echo "--- Настройки голоса"
       for key in PUBLIC_DOMAIN MEDIASOUP_ANNOUNCED_IP MEDIASOUP_BIND_TO_ANNOUNCED MEDIASOUP_WEBRTC_PORT \
-        MEDIASOUP_RTC_MIN_PORT MEDIASOUP_RTC_MAX_PORT TURN_EXTERNAL_IP TURN_PORT TURN_MIN_PORT TURN_MAX_PORT \
-        TURN_TLS_ENABLED TURN_TLS_PORT RTC_ICE_TRANSPORT_POLICY; do
+        MEDIASOUP_RTC_MIN_PORT MEDIASOUP_RTC_MAX_PORT TURN_EXTERNAL_IP TURN_RELAY_IP TURN_PORT TURN_MIN_PORT TURN_MAX_PORT \
+        TURN_TLS_PORT RTC_ICE_TRANSPORT_POLICY; do
         echo "${key}=$(env_value "$key")"
       done
       echo
@@ -1430,7 +1450,6 @@ cmd_update() {
 
   ensure_prod_secrets
   if [[ -d "/etc/letsencrypt/live/$(env_value PUBLIC_DOMAIN)" ]]; then
-    sync_turn_tls_certs
     install_renewal_hooks
   fi
   step "Сборка новой версии (5–15 минут)" "$BUILD_HINT"
@@ -1483,9 +1502,6 @@ cmd_repair() {
   require_repo
   require_env
   ensure_prod_secrets
-  if [[ -d "/etc/letsencrypt/live/$(env_value PUBLIC_DOMAIN)" ]]; then
-    sync_turn_tls_certs
-  fi
   step "Пересоздание всех контейнеров (данные не трогаются)" "$BUILD_HINT"
   compose up -d --force-recreate
   apply_restart_policy
@@ -1587,7 +1603,6 @@ cmd_cert_hooks() {
   start_log cert-hooks
   require_repo
   require_env
-  sync_turn_tls_certs
   install_renewal_hooks
   log_line "Проверить продление: certbot renew --dry-run"
 }

@@ -44,8 +44,16 @@ export function Spinner({
 
 /* ---------- LoadingDots ---------- */
 
-/** Три прыгающих пикселя («печатает…», ожидание). */
-export function LoadingDots({ label = "Загрузка", className }: { label?: string; className?: string }) {
+/** Три прыгающих пикселя («печатает…», ожидание). `muted` — серые, для второстепенного ожидания. */
+export function LoadingDots({
+  label = "Загрузка",
+  tone = "brand",
+  className,
+}: {
+  label?: string;
+  tone?: "brand" | "muted";
+  className?: string;
+}) {
   return (
     <span role="status" aria-label={label} className={cx("inline-flex h-3 items-end gap-1", className)}>
       {[0, 0.12, 0.24].map((delay) => (
@@ -53,7 +61,7 @@ export function LoadingDots({ label = "Загрузка", className }: { label?:
           key={delay}
           aria-hidden="true"
           style={{ "--d": `${delay}s` } as CSSProperties}
-          className="ds-pxhop size-1.5 bg-brand-text"
+          className={cx("ds-pxhop size-1.5", tone === "muted" ? "bg-muted" : "bg-brand-text")}
         />
       ))}
     </span>

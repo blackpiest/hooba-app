@@ -253,6 +253,26 @@
   }
 }
 
+/* Рамка «дышит» от линии к приглушённому тексту: блок ждёт соединения (панель голоса). */
+@utility ds-border-pulse {
+  animation: ds-border-pulse 1.6s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    border-color: var(--color-line-strong);
+  }
+}
+
+@keyframes ds-border-pulse {
+  0%,
+  100% {
+    border-color: var(--color-line);
+  }
+  50% {
+    border-color: var(--color-muted);
+  }
+}
+
 @keyframes ds-pxhop {
   0%,
   55%,

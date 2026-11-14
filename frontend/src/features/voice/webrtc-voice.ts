@@ -8,6 +8,13 @@ import type {
 } from './webrtc-voice.types';
 import { getSignalingDebug, requestVoiceSignal, sendVoiceSpeaking, subscribeRealtime } from '../../shared/ws/app-realtime';
 import { createVoiceConnectionWatch } from './voice-connection-watch';
+import {
+  iceServersForRelayRoute,
+  isDtlsBroken,
+  nextVoiceRoute,
+  relayIceServers,
+  type VoiceIceServer,
+} from './voice-ice-route';
 import { formatVoiceIncidentReport, type IceReportSnapshot, type PlaybackSinkState, type VoiceIncidentEvent } from './voice-incident-report';
 import { useScreenShareStore } from '../screenshare/screen-share-store';
 import {
@@ -47,10 +54,12 @@ type RtcStat = {
   nominated?: boolean;
   selected?: boolean;
   selectedCandidatePairId?: string;
+  dtlsState?: string;
   currentRoundTripTime?: number;
   localCandidateId?: string;
   candidateType?: string;
   protocol?: string;
+  relayProtocol?: string;
   bytesSent?: number;
   bytesReceived?: number;
   audioLevel?: number;
@@ -67,9 +76,16 @@ function readIceSnapshot(stats: RTCStatsReport): Omit<IceReportSnapshot, 'connec
     records.push(asRtcStat(raw));
   });
   let selectedId: string | null = null;
+  let dtlsState: string | null = null;
   for (const stat of records) {
-    if (stat.type === 'transport' && typeof stat.selectedCandidatePairId === 'string') {
+    if (stat.type !== 'transport') {
+      continue;
+    }
+    if (typeof stat.selectedCandidatePairId === 'string') {
       selectedId = stat.selectedCandidatePairId;
+    }
+    if (typeof stat.dtlsState === 'string') {
+      dtlsState = stat.dtlsState;
     }
   }
   let chosen: RtcStat | null = null;
@@ -88,6 +104,7 @@ function readIceSnapshot(stats: RTCStatsReport): Omit<IceReportSnapshot, 'connec
   const pair = chosen ?? nominated;
   let candidateType: string | null = null;
   let protocol: string | null = null;
+  let relayProtocol: string | null = null;
   const localId = pair?.localCandidateId;
   if (typeof localId === 'string') {
     for (const stat of records) {
@@ -100,6 +117,9 @@ function readIceSnapshot(stats: RTCStatsReport): Omit<IceReportSnapshot, 'connec
       if (typeof stat.protocol === 'string') {
         protocol = stat.protocol;
       }
+      if (typeof stat.relayProtocol === 'string') {
+        relayProtocol = stat.relayProtocol;
+      }
     }
   }
   let rttMs: number | null = null;
@@ -107,7 +127,7 @@ function readIceSnapshot(stats: RTCStatsReport): Omit<IceReportSnapshot, 'connec
   if (typeof seconds === 'number' && Number.isFinite(seconds)) {
     rttMs = Math.round(seconds * 1000);
   }
-  return { candidateType, protocol, rttMs };
+  return { candidateType, protocol, relayProtocol, rttMs, dtlsState };
 }
 
 function readOutboundBytes(stats: RTCStatsReport): number | null {
@@ -182,6 +202,8 @@ function transportOpts(
 }
 
 const VOICE_PLAYBACK_ROOT_ID = 'voice-playback-root';
+/** Окно после входа, в котором закрытый DTLS считается сломанной сетью, а не рестартом сервера. */
+const VOICE_DTLS_BREAK_WINDOW_MS = 20_000;
 
 function mountVoicePlaybackAudio(el: HTMLAudioElement): void {
   let root = document.getElementById(VOICE_PLAYBACK_ROOT_ID);
@@ -623,13 +645,23 @@ export async function startVoiceMediasoup(
   const device = await Device.factory();
 
   const caps = await requestVoiceSignal(channelId, 'getRouterCapabilities', {});
-  const rawIce = caps.ice_servers as RTCIceServer[] | undefined;
-  const iceServers =
-    Array.isArray(rawIce) && rawIce.length > 0 ? rawIce : undefined;
-  const iceTransportPolicy: RTCIceTransportPolicy | undefined =
-    caps.ice_transport_policy === 'relay' ? 'relay' : undefined;
-  const transportIceOpts: { iceServers?: RTCIceServer[]; iceTransportPolicy?: RTCIceTransportPolicy } =
-    iceTransportPolicy !== undefined ? { iceServers, iceTransportPolicy } : { iceServers };
+  const rawIce = caps.ice_servers as VoiceIceServer[] | undefined;
+  const serverIce: VoiceIceServer[] = Array.isArray(rawIce) ? rawIce : [];
+  const relayAvailable = relayIceServers(serverIce).length > 0;
+  const route = options?.route ?? 'direct';
+  const nextRoute = nextVoiceRoute(route, serverIce);
+  let transportIceOpts: { iceServers?: RTCIceServer[]; iceTransportPolicy?: RTCIceTransportPolicy };
+  if (route !== 'direct') {
+    const routeServers = iceServersForRelayRoute(serverIce, route);
+    if (routeServers.length === 0) {
+      throw new Error('VOICE_RELAY_UNAVAILABLE');
+    }
+    transportIceOpts = { iceServers: routeServers, iceTransportPolicy: 'relay' };
+  } else {
+    const iceServers = serverIce.length > 0 ? serverIce : undefined;
+    transportIceOpts =
+      caps.ice_transport_policy === 'relay' ? { iceServers, iceTransportPolicy: 'relay' } : { iceServers };
+  }
   await device.load({
     routerRtpCapabilities: caps.rtp_capabilities as RtpCapabilities,
   });
@@ -646,10 +678,49 @@ export async function startVoiceMediasoup(
     ...transportIceOpts,
   });
 
+  const startedAt = Date.now();
+  let everConnected = false;
   const connectionWatch = createVoiceConnectionWatch((failed) => {
     pushEvent(failed ? 'media connection failed' : 'media connection restored');
-    options?.onConnectionProblem?.(failed);
+    options?.onConnectionProblem?.(failed, {
+      reason: 'connect',
+      route,
+      relayAvailable,
+      nextRoute,
+      fresh: !everConnected,
+    });
   });
+  /**
+   * DTLS закрыт при живом ICE: `connectionState` остаётся `connected`, поэтому watch этого не видит.
+   * Считается только обрыв в первые секунды: при рестарте сервера mediasoup тоже шлёт close_notify,
+   * и такой обрыв не должен переводить всех на relay.
+   */
+  let dtlsBreakReported = false;
+  const checkDtlsBreak = () => {
+    if (dtlsBreakReported || stopped) {
+      return;
+    }
+    if (Date.now() - startedAt > VOICE_DTLS_BREAK_WINDOW_MS) {
+      if (isDtlsBroken(sendIce.dtlsState) || isDtlsBroken(recvIce.dtlsState)) {
+        dtlsBreakReported = true;
+        pushEvent('dtls closed late (ignored)');
+      }
+      return;
+    }
+    const broken: string[] = [];
+    if (!sendTransport.closed && isDtlsBroken(sendIce.dtlsState)) {
+      broken.push(`send=${sendIce.dtlsState ?? '?'}`);
+    }
+    if (!recvTransport.closed && isDtlsBroken(recvIce.dtlsState)) {
+      broken.push(`recv=${recvIce.dtlsState ?? '?'}`);
+    }
+    if (broken.length === 0) {
+      return;
+    }
+    dtlsBreakReported = true;
+    pushEvent(`dtls broken ${broken.join(' ')} route=${route}`);
+    options?.onConnectionProblem?.(true, { reason: 'dtls', route, relayAvailable, nextRoute, fresh: true });
+  };
 
   const wireConnect = (t: Transport, direction: 'send' | 'recv') => {
     t.on('connect', ({ dtlsParameters }, callback, errback) => {
@@ -791,12 +862,16 @@ export async function startVoiceMediasoup(
   let sendIce: Omit<IceReportSnapshot, 'connectionState'> = {
     candidateType: null,
     protocol: null,
+    relayProtocol: null,
     rttMs: null,
+    dtlsState: null,
   };
   let recvIce: Omit<IceReportSnapshot, 'connectionState'> = {
     candidateType: null,
     protocol: null,
+    relayProtocol: null,
     rttMs: null,
+    dtlsState: null,
   };
 
   function pushEvent(message: string): void {
@@ -830,15 +905,23 @@ export async function startVoiceMediasoup(
     prev: Omit<IceReportSnapshot, 'connectionState'>,
     next: Omit<IceReportSnapshot, 'connectionState'>,
   ): Omit<IceReportSnapshot, 'connectionState'> {
-    if (prev.candidateType !== next.candidateType || prev.protocol !== next.protocol) {
+    if (
+      prev.candidateType !== next.candidateType ||
+      prev.protocol !== next.protocol ||
+      prev.relayProtocol !== next.relayProtocol
+    ) {
       if (
         prev.candidateType !== null ||
         next.candidateType !== null ||
         prev.protocol !== null ||
         next.protocol !== null
       ) {
-        pushEvent(`${direction} ice=${next.candidateType ?? 'none'} proto=${next.protocol ?? 'none'}`);
+        const via = next.relayProtocol ? ` via=${next.relayProtocol}` : '';
+        pushEvent(`${direction} ice=${next.candidateType ?? 'none'} proto=${next.protocol ?? 'none'}${via}`);
       }
+    }
+    if (prev.dtlsState !== next.dtlsState && next.dtlsState !== null) {
+      pushEvent(`${direction} dtls=${next.dtlsState}`);
     }
     return next;
   }
@@ -874,6 +957,7 @@ export async function startVoiceMediasoup(
           /* транспорт уже закрыт */
         }
       }
+      checkDtlsBreak();
       if (localProducer && !localProducer.closed) {
         try {
           const bytes = readOutboundBytes(await localProducer.getStats());
@@ -1771,11 +1855,23 @@ export async function startVoiceMediasoup(
     }
   });
   unsubVolume = subscribeVoiceVolume(applyVolumeGains);
+  const markEverConnected = () => {
+    if (!everConnected) {
+      everConnected = true;
+      options?.onMediaConnected?.();
+    }
+  };
   sendTransport.on('connectionstatechange', (state) => {
+    if (state === 'connected') {
+      markEverConnected();
+    }
     pushEvent(`send connection=${state}`);
     connectionWatch.state('send', state);
   });
   recvTransport.on('connectionstatechange', (state) => {
+    if (state === 'connected') {
+      markEverConnected();
+    }
     pushEvent(`recv connection=${state}`);
     connectionWatch.state('recv', state);
   });
@@ -2069,6 +2165,7 @@ export async function startVoiceMediasoup(
         ws: getSignalingDebug(),
         send: { connectionState: sendTransport.connectionState, ...sendIce },
         recv: { connectionState: recvTransport.connectionState, ...recvIce },
+        route: { mode: route, relayAvailable },
         outbound: {
           producerId: localProducer?.id ?? null,
           paused: localProducer?.paused ?? false,
