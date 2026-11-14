@@ -1,5 +1,5 @@
 import type { WebSocket } from 'ws';
-import { createWorker } from 'mediasoup';
+import { createWorker, setLogEventListeners } from 'mediasoup';
 import type {
   Consumer,
   DtlsParameters,
@@ -206,10 +206,22 @@ async function launchWebRtcServer(env: Env, created: Worker): Promise<void> {
   }
 }
 
+// Без слушателей предупреждения воркера уходят в пакет debug и молча теряются без DEBUG=mediasoup*.
+// Нужны, чтобы видеть причину отказа DTLS (например, несовпадение отпечатка сертификата).
+setLogEventListeners({
+  onwarn: (namespace, log) => {
+    console.warn(`[${namespace}] ${log}`);
+  },
+  onerror: (namespace, log, error) => {
+    console.error(`[${namespace}] ${log}${error ? `: ${error.message}` : ''}`);
+  },
+});
+
 async function launchWorker(env: Env): Promise<boolean> {
   try {
     const created = await createWorker({
       logLevel: 'warn',
+      logTags: ['dtls', 'srtp', 'ice'],
       ...transportPortRange(env.MEDIASOUP_RTC_MIN_PORT, env.MEDIASOUP_RTC_MAX_PORT, env.MEDIASOUP_WEBRTC_PORT),
     });
     created.on('died', (error) => {
@@ -831,6 +843,15 @@ export async function handleVoiceMediasoupSignal(
               : '(pending)';
           console.info(
             `[voice/mediasoup] ice tuple direction=${direction} user=${userId ?? '(unknown)'} transport=${transport.id} protocol=${tuple.protocol} remote=${remote}`,
+          );
+        });
+        transport.on('dtlsstatechange', (dtlsState) => {
+          if (dtlsState !== 'failed' && dtlsState !== 'closed') {
+            return;
+          }
+          const userId = getVoiceUserIdForSocket(socket);
+          console.warn(
+            `[voice/mediasoup] dtls ${dtlsState} direction=${direction} user=${userId ?? '(unknown)'} transport=${transport.id}`,
           );
         });
         const peer = ensurePeer(socket, channelId);
