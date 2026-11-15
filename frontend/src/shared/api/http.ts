@@ -28,6 +28,24 @@ export async function parseJsonBody(res: Response): Promise<unknown> {
   }
 }
 
+let pendingAbort = new AbortController();
+
+/**
+ * Оборвать запросы `authenticatedFetch`, которые сейчас ждут ответа (загрузка приложения зависла на сервере).
+ * Refresh токена не обрывается: сервер мог уже выдать новый, и потерянный ответ разлогинил бы пользователя.
+ */
+export function abortPendingRequests(): void {
+  pendingAbort.abort(new DOMException("Сервер не ответил вовремя", "AbortError"));
+  pendingAbort = new AbortController();
+}
+
+function withPendingAbort(signal: AbortSignal | null | undefined): AbortSignal {
+  if (!signal) {
+    return pendingAbort.signal;
+  }
+  return typeof AbortSignal.any === "function" ? AbortSignal.any([signal, pendingAbort.signal]) : signal;
+}
+
 /** GET/POST с Bearer; перед запросом продлевает access по refresh при необходимости; при 401 — один повтор после refresh. */
 export async function authenticatedFetch(input: string, init: RequestInit = {}): Promise<Response> {
   const { ensureAccessTokenFresh } = await import('./token-refresh.js');
@@ -38,7 +56,8 @@ export async function authenticatedFetch(input: string, init: RequestInit = {}):
   }
   const headers = new Headers(init.headers);
   headers.set('Authorization', `Bearer ${token}`);
-  let res = await fetch(input, { ...init, headers });
+  const signal = withPendingAbort(init.signal);
+  let res = await fetch(input, { ...init, headers, signal });
   if (res.status === 401 && getRefreshToken()) {
     try {
       await ensureAccessTokenFresh({ force: true });
@@ -50,7 +69,7 @@ export async function authenticatedFetch(input: string, init: RequestInit = {}):
       return res;
     }
     headers.set('Authorization', `Bearer ${t2}`);
-    res = await fetch(input, { ...init, headers });
+    res = await fetch(input, { ...init, headers, signal });
   }
   return res;
 }

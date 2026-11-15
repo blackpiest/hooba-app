@@ -273,6 +273,44 @@
   }
 }
 
+/* Плавная смена цвета рамки (панель голоса: подключение → качество связи). */
+@utility ds-tone-shift {
+  transition: border-color 320ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+/*
+ * Одноразовое кольцо цвета текста, плавно расходящееся от рамки на 4px и гаснущее.
+ * Вешается на слой поверх блока с `key` = тон: смена ключа перезапускает анимацию.
+ */
+@utility ds-tone-flash {
+  /* Размах и прозрачность — разными кривыми: кольцо быстро растёт, а гаснет мягко, без обрыва в конце. */
+  animation:
+    ds-tone-flash-grow 420ms cubic-bezier(0.22, 1, 0.36, 1) both,
+    ds-tone-flash-fade 480ms ease-in-out both;
+}
+
+@keyframes ds-tone-flash-grow {
+  from {
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  to {
+    box-shadow: 0 0 0 4px currentColor;
+  }
+}
+
+@keyframes ds-tone-flash-fade {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes ds-pxhop {
   0%,
   55%,
@@ -280,7 +318,7 @@
     translate: 0 0;
   }
   25% {
-    translate: 0 -6px;
+    translate: 0 calc(var(--hop, 6px) * -1);
   }
 }
 
@@ -375,6 +413,7 @@
   [class*="ds-hop"],
   [class*="ds-slime"],
   [class*="ds-pxhop"],
+  [class*="ds-tone-flash"],
   [class*="ds-bd-"],
   [class*="ds-shimmer"]::after {
     animation: none !important;

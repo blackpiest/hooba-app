@@ -126,6 +126,8 @@ export async function register(
   return data;
 }
 
+const LOGOUT_TIMEOUT_MS = 5_000;
+
 export async function logout(): Promise<void> {
   const refresh = getRefreshToken();
   clearSessionClient();
@@ -137,6 +139,8 @@ export async function logout(): Promise<void> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: refresh }),
+      // Выход — по возможности: зависший сервер не должен держать пользователя на экране.
+      signal: AbortSignal.timeout(LOGOUT_TIMEOUT_MS),
     });
     await parseEnvelope<{ ok: true }>(res);
   } catch {

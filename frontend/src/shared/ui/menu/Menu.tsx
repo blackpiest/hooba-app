@@ -98,6 +98,8 @@ export type DropdownMenuProps<T extends object> = Omit<MenuProps<T>, "children">
   placement?: AriaPopoverProps["placement"];
   /** Меню открылось или закрылось (например, спрятать подсказку у той же кнопки). */
   onOpenChange?: (isOpen: boolean) => void;
+  /** Ширина меню — по кнопке (меню под широкой кнопкой-заголовком). */
+  matchTriggerWidth?: boolean;
   children: ReactNode;
 };
 
@@ -109,6 +111,7 @@ export function DropdownMenu<T extends object>({
   trigger,
   placement = "bottom start",
   onOpenChange,
+  matchTriggerWidth = false,
   children,
   ...menuProps
 }: DropdownMenuProps<T>) {
@@ -116,7 +119,11 @@ export function DropdownMenu<T extends object>({
     <MenuTrigger onOpenChange={onOpenChange}>
       {trigger}
       {/* flex-col + min-h-0: список ужимается под высоту, которую react-aria оставил поповеру, и не вылезает за рамку. */}
-      <AriaPopover placement={placement} offset={6} className={cx(POPOVER_SURFACE, SHEET_ON_MOBILE, "flex flex-col")}>
+      <AriaPopover
+        placement={placement}
+        offset={6}
+        className={cx(POPOVER_SURFACE, SHEET_ON_MOBILE, "flex flex-col", matchTriggerWidth && "w-(--trigger-width)")}
+      >
         <CloseOnOutsideContextMenu />
         <Menu {...menuProps} className={cx("min-h-0", menuProps.className)}>
           {children}

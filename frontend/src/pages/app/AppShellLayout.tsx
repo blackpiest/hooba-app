@@ -70,10 +70,15 @@ import { useScreenShareStore } from "@/features/screenshare/screen-share-store";
 import { useChatMessageSound } from "@/features/chat/use-chat-message-sound";
 import { useDesktopToasts } from "@/features/desktop-toasts/use-desktop-toasts";
 import { VoiceSettingsProvider } from "@/features/voice/voice-settings";
-import { hasSeenInvites, markInvitesSeen } from "@/shared/lib/invites-seen";
-import { apiUrl } from "@/shared/api/http";
+import { markInvitesSeen } from "@/shared/lib/invites-seen";
+import { abortPendingRequests, apiUrl } from "@/shared/api/http";
 import { useServerFavicon } from "@/features/server-icon/use-server-favicon";
-import { Alert, Button, Counter, IconButton, ServerIcon, ToastHost, Tooltip, UnreadDot, toast } from "@/shared/ui";
+import { useRememberServerProfile } from "@/features/server-switch/server-profile-cache";
+import { isDesktopApp } from "@/shared/lib/server-target";
+import { ServerRail } from "@/widgets/server-rail/ServerRail";
+import { currentServerCard } from "@/widgets/server-rail/rail-servers";
+import { ServerMenu } from "@/widgets/server-menu/ServerMenu";
+import { Alert, Button, IconButton, ToastHost, toast } from "@/shared/ui";
 import { openVoiceSettings } from "@/features/voice/voice-settings";
 import { UserDock } from "@/widgets/user-dock/UserDock";
 import { ProfileEditDialog, type ProfileEditTab } from "@/widgets/profile-edit/ProfileEditDialog";
@@ -111,6 +116,10 @@ export type AppShellOutletContext = {
 
 /** На узком экране (< md) видна одна панель оболочки. */
 type MobilePane = "channels" | "content" | "members";
+
+/** Сколько ждать сервер при открытии приложения, прежде чем прервать подключение. */
+const BOOT_TIMEOUT_MS = 15_000;
+const BOOT_TIMEOUT_MESSAGE = "Сервер не отвечает, Hooba прервал подключение. Попробуйте ещё раз позже";
 
 function paneForPath(pathname: string): MobilePane {
   return matchPath("/app/channels/:channelId", pathname) ? "content" : "channels";
@@ -566,6 +575,17 @@ export function AppShellLayout() {
     setBootError(null);
     const bootStartedAt = Date.now();
     const bootEpoch = getSessionEpoch();
+    // Сервер принял соединение, но молчит: без своего срока запросы висят, сколько решит браузер.
+    // По истечении обрываем запросы и WS и честно говорим, что подключение прервал клиент.
+    const bootWatchdog = window.setTimeout(() => {
+      if (cancelled) {
+        return;
+      }
+      cancelled = true;
+      abortPendingRequests();
+      disconnectAppRealtime();
+      setBootError(BOOT_TIMEOUT_MESSAGE);
+    }, BOOT_TIMEOUT_MS);
     void (async () => {
       if (cancelled || bootEpoch !== getSessionEpoch()) {
         return;
@@ -590,6 +610,7 @@ export function AppShellLayout() {
           navigateRef.current("/login", { replace: true });
           return;
         }
+        window.clearTimeout(bootWatchdog);
         setBootError("Не удалось связаться с сервером.");
       };
       try {
@@ -634,6 +655,10 @@ export function AppShellLayout() {
         failBoot(channelState.error ?? "Не удалось загрузить каналы.");
         return;
       }
+      if (cancelled) {
+        return;
+      }
+      window.clearTimeout(bootWatchdog);
       const waitMs = Math.max(0, 1000 - (Date.now() - bootStartedAt));
       if (waitMs > 0) {
         await new Promise((resolve) => window.setTimeout(resolve, waitMs));
@@ -644,6 +669,7 @@ export function AppShellLayout() {
     })();
     return () => {
       cancelled = true;
+      window.clearTimeout(bootWatchdog);
       unsub();
       disconnectAppRealtime();
       teardownVoiceSessionWs();
@@ -859,6 +885,12 @@ export function AppShellLayout() {
   }, [channels, channelsLoaded, voicePanelChannelId]);
 
   useEffect(() => {
+    return window.hoobaDesktop?.onTrayLogout?.(() => {
+      void logout().then(() => navigate("/login", { replace: true }));
+    });
+  }, [navigate]);
+
+  useEffect(() => {
     if (me?.presence) {
       usePresenceStore.getState().setSelfPreference(me.presence);
     }
@@ -908,6 +940,12 @@ export function AppShellLayout() {
   const serverName = me?.server_name?.trim() || "Сервер";
   const serverIconSrc = me?.server_icon_url ? apiUrl(me.server_icon_url) : null;
   useServerFavicon(serverIconSrc);
+  useRememberServerProfile(me ? serverName : null, me?.server_icon_url ?? null, serverIconSrc);
+  // Desktop: панель серверов слева; настройки общие для всех серверов — их кнопка внизу панели.
+  const serverRail = isDesktopApp() && wide;
+  const railActive = useMemo(() => ({ name: serverName, icon: serverIconSrc }), [serverName, serverIconSrc]);
+  // Пока сервер не ответил, имени и аватара от него нет — берём сохранённые.
+  const bootRail = useMemo(() => (serverRail && !shellReady ? currentServerCard() : null), [serverRail, shellReady]);
   const dockBadge: PublicPresenceStatus =
     selfPreference === "invisible"
       ? "offline"
@@ -923,6 +961,7 @@ export function AppShellLayout() {
       <>
       <ShellBackgroundHooks />
       <BootSplash
+        aside={bootRail ? <ServerRail active={bootRail} showSettings /> : undefined}
         message={bootError ?? undefined}
         onRetry={
           bootError
@@ -948,55 +987,30 @@ export function AppShellLayout() {
           void onLogout();
         }}
       />
-      <div className="flex min-w-0 flex-1 gap-2 p-1 md:p-2 max-md:p-0">
+      {serverRail ? <ServerRail active={railActive} onSettings={() => openVoiceSettings()} /> : null}
+      <div className={`flex min-w-0 flex-1 gap-2 p-1 md:p-2 max-md:p-0 ${serverRail ? "md:pl-0" : ""}`}>
         <aside
           className={`relative ${wide || mobilePane === "channels" ? "flex" : "hidden"} w-full shrink-0 flex-col overflow-hidden border border-line bg-bg max-md:border-0 max-md:pb-safe md:w-[260px]`}
         >
-          <div className="flex h-[52px] shrink-0 items-center gap-2 border-b border-line pl-3 pr-2 text-left text-sm font-semibold">
-            <ServerIcon name={serverName} src={serverIconSrc} size="md" />
-            <span className="min-w-0 flex-1 truncate">{serverName}</span>
-            {invitesEnabled ? (
-              <Tooltip content="Ваши инвайты" placement="bottom">
-                <span className="relative inline-flex">
-                  <IconButton
-                    size="sm"
-                    icon="user-plus"
-                    label="Пригласить друзей"
-                    onPress={() => {
-                      if (me) {
-                        markInvitesSeen(me.id);
-                      }
-                      setMyInvitesOpen(true);
-                    }}
-                  />
-                  {me && !hasSeenInvites(me.id) ? (
-                    <UnreadDot
-                      label="Новое: пригласительные"
-                      className="pointer-events-none absolute right-[3px] top-[3px] size-2.5 animate-pulse border-2 border-bg"
-                    />
-                  ) : null}
-                </span>
-              </Tooltip>
-            ) : null}
-            {staff ? (
-              <Tooltip content="Панель администратора" placement="bottom">
-                <span className="relative inline-flex">
-                  <IconButton
-                    size="sm"
-                    icon="shield"
-                    label={
-                      openReports > 0
-                        ? `Управление сервером: ${serverName}, новых жалоб: ${openReports}`
-                        : `Управление сервером: ${serverName}`
+          <div className="flex h-[52px] shrink-0 items-center gap-2 border-b border-line pl-2 pr-2 text-left text-sm font-semibold">
+            <ServerMenu
+              name={serverName}
+              icon={serverIconSrc}
+              onLogout={onLogout}
+              invites={
+                invitesEnabled
+                  ? {
+                      onOpen: () => {
+                        if (me) {
+                          markInvitesSeen(me.id);
+                        }
+                        setMyInvitesOpen(true);
+                      },
                     }
-                    onPress={() => setServerMenuOpen(true)}
-                  />
-                  {openReports > 0 ? (
-                    <Counter value={openReports} className="pointer-events-none absolute -right-1.5 -top-1.5" />
-                  ) : null}
-                </span>
-              </Tooltip>
-            ) : null}
+                  : undefined
+              }
+              admin={staff ? { openReports, onOpen: () => setServerMenuOpen(true) } : undefined}
+            />
           </div>
           {realtimeDown ? (
             <Alert tone="warning" compact className="border-x-0 border-t-0">
@@ -1044,7 +1058,7 @@ export function AppShellLayout() {
             onPresence={(next) => {
               void onPresence(next);
             }}
-            onSettings={() => openVoiceSettings()}
+            onSettings={serverRail ? undefined : () => openVoiceSettings()}
           />
         </aside>
         <section

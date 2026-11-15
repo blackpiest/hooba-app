@@ -5,6 +5,7 @@ import { ServerAddressField } from '../shared/ui/server-address-field/ServerAddr
 import { register } from '../shared/api/auth';
 import { formatApiError } from '../shared/api/format-error';
 import { buildAppInviteLink, commitServerAddress, getServerUrl, isDesktopApp } from '../shared/lib/server-target';
+import { ADD_SERVER_PARAM } from '@/features/server-switch/add-server-mode';
 import { canPeekClipboard, canReadClipboard, readClipboardText } from '../shared/lib/clipboard';
 import { buildLandingUrl, openDesktopAppOrLanding } from '../shared/lib/open-desktop-app';
 import { playAuthSuccessSound } from '@/features/ui-sounds/ui-sounds';
@@ -139,9 +140,11 @@ function InviteCodeField({ value, onChange }: { value: string; onChange: (value:
 export function RegisterPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  // Регистрация на ещё одном сервере из панели серверов: вход на текущем остаётся (вернуться — в панели).
+  const [adding] = useState(() => isDesktopApp() && searchParams.get(ADD_SERVER_PARAM) === '1');
   const isTouch = useIsTouch();
   const [serverAddress, setServerAddress] = useState(() =>
-    isDesktopApp() ? (searchParams.get('server') ?? getServerUrl() ?? '') : '',
+    isDesktopApp() ? (searchParams.get('server') ?? (adding ? '' : getServerUrl()) ?? '') : '',
   );
   const [inviteCode, setInviteCode] = useState(() => searchParams.get('invite') ?? '');
   const [username, setUsername] = useState('');
@@ -187,10 +190,11 @@ export function RegisterPage() {
     setError(null);
     setServerError(null);
     setLoading(true);
+    let restoreServer = (): void => {};
     try {
       if (isDesktopApp()) {
         try {
-          await commitServerAddress(serverAddress);
+          restoreServer = await commitServerAddress(serverAddress);
         } catch (err: unknown) {
           setServerError(err instanceof Error ? err.message : 'Ошибка подключения');
           return;
@@ -200,6 +204,7 @@ export function RegisterPage() {
       playAuthSuccessSound();
       navigate('/app', { replace: true });
     } catch (err: unknown) {
+      restoreServer();
       const message = err instanceof Error ? formatApiError(err.message, 'Ошибка регистрации') : 'Ошибка регистрации';
       if (err instanceof Error && err.message.startsWith('USERNAME_FORBIDDEN')) {
         setUsernameError(message);
@@ -245,7 +250,7 @@ export function RegisterPage() {
       footer={
         <>
           Уже есть аккаунт?{' '}
-          <Link to="/login" draggable={false} className={linkClass}>
+          <Link to={adding ? `/login?${ADD_SERVER_PARAM}=1` : '/login'} draggable={false} className={linkClass}>
             Вход
           </Link>
         </>

@@ -8,6 +8,8 @@ export type MemberMenuTarget = {
   username: string;
   channelId: number;
   volume: number;
+  /** Громкость его демонстрации экрана у меня; `null` — он сейчас не показывает экран. */
+  streamVolume: number | null;
   serverMuted: boolean;
 };
 
@@ -23,6 +25,7 @@ export function MemberContextMenu({
   busy,
   error,
   onVolume,
+  onStreamVolume,
   onClose,
   onAction,
 }: {
@@ -37,6 +40,7 @@ export function MemberContextMenu({
   busy: boolean;
   error: string | null;
   onVolume: (volume: number) => void;
+  onStreamVolume: (volume: number) => void;
   onClose: () => void;
   onAction: (action: MemberMenuAction) => void;
 }) {
@@ -53,6 +57,9 @@ export function MemberContextMenu({
         canAdjustVolume || error ? (
           <div className="flex w-56 flex-col gap-2">
             {canAdjustVolume ? <VolumeSlider label="Громкость" value={target.volume} onChange={onVolume} /> : null}
+            {canAdjustVolume && target.streamVolume != null ? (
+              <VolumeSlider label="Громкость трансляции" value={target.streamVolume} onChange={onStreamVolume} />
+            ) : null}
             {error ? (
               <Alert tone="danger" compact>
                 {error}

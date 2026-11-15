@@ -17,7 +17,15 @@ export { Select, type SelectOption, type SelectProps } from "./select";
 export { ComboBox, type ComboBoxOption, type ComboBoxProps } from "./combo-box";
 export { Slider, type SliderProps } from "./slider";
 export { Avatar, AvatarStack, PresenceDot, type AvatarLook, type AvatarProps, type AvatarSize } from "./avatar";
-export { ServerIcon, type ServerIconProps, type ServerIconSize } from "./server-icon";
+export {
+  ServerHeaderButton,
+  ServerIcon,
+  ServerRailItem,
+  type ServerHeaderButtonProps,
+  type ServerIconProps,
+  type ServerIconSize,
+  type ServerRailItemProps,
+} from "./server-icon";
 export { Badge, Counter, Kbd, KbdCombo, RoleBadge, Tag, UnreadDot, type BadgeVariant } from "./badge";
 export { BrandMark } from "./brand-mark";
 export { Slime, type SlimeProps, type SlimePose } from "./slime";

@@ -44,24 +44,34 @@ export function Spinner({
 
 /* ---------- LoadingDots ---------- */
 
-/** Три прыгающих пикселя («печатает…», ожидание). `muted` — серые, для второстепенного ожидания. */
+/**
+ * Три прыгающих пикселя («печатает…», ожидание). `muted` — серые, для второстепенного ожидания.
+ * `size="sm"` — мелкие, по высоте строки подписи 10px (вместо значения пинга и т.п.).
+ */
 export function LoadingDots({
   label = "Загрузка",
   tone = "brand",
+  size = "md",
   className,
 }: {
   label?: string;
   tone?: "brand" | "muted";
+  size?: "sm" | "md";
   className?: string;
 }) {
+  const sm = size === "sm";
   return (
-    <span role="status" aria-label={label} className={cx("inline-flex h-3 items-end gap-1", className)}>
+    <span
+      role="status"
+      aria-label={label}
+      className={cx("inline-flex items-end", sm ? "h-2 gap-0.5" : "h-3 gap-1", className)}
+    >
       {[0, 0.12, 0.24].map((delay) => (
         <i
           key={delay}
           aria-hidden="true"
-          style={{ "--d": `${delay}s` } as CSSProperties}
-          className={cx("ds-pxhop size-1.5", tone === "muted" ? "bg-muted" : "bg-brand-text")}
+          style={{ "--d": `${delay}s`, ...(sm ? { "--hop": "3px" } : null) } as CSSProperties}
+          className={cx("ds-pxhop", sm ? "size-0.75" : "size-1.5", tone === "muted" ? "bg-muted" : "bg-brand-text")}
         />
       ))}
     </span>

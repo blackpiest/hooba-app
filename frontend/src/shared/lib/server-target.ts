@@ -5,6 +5,21 @@ import type { DesktopToast, DesktopToastInput } from './desktop-toasts';
 const SERVER_URL_KEY = 'hooba_server_url';
 const SERVER_HISTORY_KEY = 'hooba_server_history';
 const SERVER_HISTORY_LIMIT = 8;
+const SERVER_PROFILES_KEY = 'hooba_server_profiles';
+const SERVER_PROFILES_LIMIT = 24;
+
+/**
+ * Название и аватар сервера, на который входили с этого компьютера (только desktop) — для панели серверов.
+ * Без входа сервер их не отдаёт, а ссылка на аватар подписана и истекает: картинка хранится уменьшенной копией.
+ */
+export type ServerProfile = {
+  origin: string;
+  name: string;
+  /** data URL уменьшенного аватара; null — нет аватара. */
+  icon: string | null;
+  /** Путь аватара без подписи: по нему видно, что аватар сменился. */
+  iconPath: string | null;
+};
 
 export type DesktopUpdateState = {
   phase: 'idle' | 'available' | 'downloading' | 'ready' | 'error';
@@ -77,6 +92,8 @@ declare global {
       clickToast?: (id: number) => void;
       resizeToasts?: (height: number) => void;
       onToastOpen?: (listener: (target: { channelId: number }) => void) => () => void;
+      /** Нет у десктопа старше этой версии. Выход из аккаунта из меню трея (подтверждение уже получено). */
+      onTrayLogout?: (listener: () => void) => () => void;
       setTrayAttention?: (attention: boolean) => void;
       getOpenAtLogin?: () => Promise<boolean>;
       setOpenAtLogin?: (enabled: boolean) => Promise<boolean>;
@@ -119,6 +136,51 @@ export function getServerHistory(): string[] {
   }
   const current = getServerUrl();
   return current && !saved.includes(current) ? [current, ...saved] : saved;
+}
+
+/** Профили серверов в порядке первого входа (порядок в панели не прыгает при переключениях). */
+export function getServerProfiles(): ServerProfile[] {
+  if (!isDesktopApp()) {
+    return [];
+  }
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(SERVER_PROFILES_KEY) ?? '[]');
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter(
+      (item): item is ServerProfile =>
+        typeof item === 'object' &&
+        item !== null &&
+        typeof (item as ServerProfile).origin === 'string' &&
+        typeof (item as ServerProfile).name === 'string' &&
+        ((item as ServerProfile).icon === null || typeof (item as ServerProfile).icon === 'string') &&
+        ((item as ServerProfile).iconPath === null || typeof (item as ServerProfile).iconPath === 'string'),
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function saveServerProfile(profile: ServerProfile): void {
+  const list = getServerProfiles();
+  const index = list.findIndex((item) => item.origin === profile.origin);
+  if (index >= 0) {
+    list[index] = profile;
+  } else {
+    list.push(profile);
+  }
+  try {
+    localStorage.setItem(SERVER_PROFILES_KEY, JSON.stringify(list.slice(-SERVER_PROFILES_LIMIT)));
+  } catch {
+    // переполнено хранилище — панель покажет букву вместо аватара
+  }
+}
+
+/** Сделать сервер текущим (адрес уже проверен раньше — он из истории входов). */
+export function selectServer(origin: string): void {
+  localStorage.setItem(SERVER_URL_KEY, origin);
+  rememberServer(origin);
 }
 
 function rememberServer(origin: string): void {
@@ -258,8 +320,13 @@ export function resolveWsUrl(): string | null {
   return `${proto}//${url.host}/ws`;
 }
 
-export async function commitServerAddress(input: string): Promise<void> {
+/**
+ * Проверяет адрес и делает сервер текущим. Возвращает откат к прежнему серверу — на случай, если вход не удался
+ * (иначе неудачная попытка войти на другой сервер «выкинула» бы с сервера, где сессия есть).
+ */
+export async function commitServerAddress(input: string): Promise<() => void> {
   const origin = normalizeServerUrl(input);
+  const previous = localStorage.getItem(SERVER_URL_KEY);
   let res: Response;
   try {
     res = await fetch(`${origin}/api/v1/setup/status`);
@@ -279,4 +346,11 @@ export async function commitServerAddress(input: string): Promise<void> {
   }
   localStorage.setItem(SERVER_URL_KEY, origin);
   rememberServer(origin);
+  return () => {
+    if (previous === null) {
+      localStorage.removeItem(SERVER_URL_KEY);
+    } else {
+      localStorage.setItem(SERVER_URL_KEY, previous);
+    }
+  };
 }

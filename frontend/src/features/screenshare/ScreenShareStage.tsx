@@ -1,8 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { Badge, ConfirmDialog, IconButton, Toolbar, Tooltip } from "@/shared/ui";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Badge, ConfirmDialog, IconButton, Slider, Toolbar, Tooltip } from "@/shared/ui";
 import { getVoiceMediasoupHandle, useVoiceSettingsStore } from "@/features/voice/voice-settings/voice-settings";
+import {
+  getStreamVolume,
+  setStreamVolume,
+  subscribeVoiceVolume,
+  VOICE_VOLUME_DEFAULT,
+  VOICE_VOLUME_MAX,
+  VOICE_VOLUME_MIN,
+  volumeToGain,
+} from "@/shared/lib/voice-volume-prefs";
 import { useChannelStore } from "@/stores/channel-store";
 import { useVoiceRoomsStore } from "@/stores/voice-rooms-store";
+import { createScreenAudioPlayback, type ScreenAudioPlayback } from "./screen-share-audio";
 import { screenShareErrorText } from "./screen-share-profiles";
 import { stopWatchingScreenShare, waitForVoiceHandle } from "./screen-share-session";
 import { useScreenShareStore } from "./screen-share-store";
@@ -33,6 +43,12 @@ export function ScreenShareStage({
   const channelName = useChannelStore((s) =>
     watchingChannelId == null ? "" : (s.channels.find((channel) => channel.id === watchingChannelId)?.name ?? ""),
   );
+  const streamerId = share?.user_id ?? null;
+  /** Громкость трансляции у этого зрителя, запоминается по ведущему (как громкость участников). */
+  const streamVolume = useSyncExternalStore(subscribeVoiceVolume, () =>
+    streamerId == null ? VOICE_VOLUME_DEFAULT : getStreamVolume(streamerId),
+  );
+  const playbackRef = useRef<ScreenAudioPlayback | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -58,7 +74,7 @@ export function ScreenShareStage({
     const rebinding = watchedChannelRef.current === watchingChannelId;
     let cancelled = false;
     let unsubscribe = () => {};
-    const bound: { video: HTMLVideoElement | null; audio: HTMLAudioElement | null } = {
+    const bound: { video: HTMLVideoElement | null; audio: ScreenAudioPlayback | null } = {
       video: null,
       audio: null,
     };
@@ -83,11 +99,13 @@ export function ScreenShareStage({
         }
         const audio = audioRef.current;
         if (media.audio && audio) {
-          bound.audio = audio;
-          audio.srcObject = new MediaStream([media.audio]);
           audio.muted = useScreenShareStore.getState().soundMuted;
+          const playback = createScreenAudioPlayback(audio, media.audio);
+          const streamer = useVoiceRoomsStore.getState().screenShareByChannelId[watchingChannelId]?.user_id;
+          playback.setLevel(volumeToGain(streamer == null ? VOICE_VOLUME_DEFAULT : getStreamVolume(streamer)));
+          bound.audio = playback;
+          playbackRef.current = playback;
           setHasWatchAudio(true);
-          await audio.play().catch(() => {});
         } else {
           setHasWatchAudio(false);
         }
@@ -117,7 +135,10 @@ export function ScreenShareStage({
         bound.video.srcObject = null;
       }
       if (bound.audio) {
-        bound.audio.srcObject = null;
+        bound.audio.dispose();
+        if (playbackRef.current === bound.audio) {
+          playbackRef.current = null;
+        }
       }
       getVoiceMediasoupHandle()?.stopWatchingScreenShare();
       setHasWatchAudio(false);
@@ -130,6 +151,20 @@ export function ScreenShareStage({
       audio.muted = soundMuted;
     }
   }, [soundMuted]);
+
+  useEffect(() => {
+    playbackRef.current?.setLevel(volumeToGain(streamVolume));
+  }, [streamVolume]);
+
+  const changeStreamVolume = (value: number) => {
+    if (streamerId == null) {
+      return;
+    }
+    setStreamVolume(streamerId, value);
+    if (value > 0 && useScreenShareStore.getState().soundMuted) {
+      setSoundMuted(false);
+    }
+  };
 
   if (watchingChannelId == null) {
     return null;
@@ -246,7 +281,25 @@ export function ScreenShareStage({
                       onPress={() => setSoundMuted(!soundMuted)}
                     />
                   </Tooltip>
-                ) : (
+                ) : null}
+                {hasWatchAudio && streamerId != null ? (
+                  <div className="flex items-center gap-2 pr-2 pl-1">
+                    <Slider
+                      aria-label="Громкость трансляции"
+                      className="w-28"
+                      value={streamVolume}
+                      onChange={changeStreamVolume}
+                      resetValue={VOICE_VOLUME_DEFAULT}
+                      minValue={VOICE_VOLUME_MIN}
+                      maxValue={VOICE_VOLUME_MAX}
+                      formatValue={false}
+                    />
+                    <span className="w-9 font-label text-[11px] tabular-nums text-muted" aria-hidden="true">
+                      {soundMuted ? 0 : streamVolume}%
+                    </span>
+                  </div>
+                ) : null}
+                {hasWatchAudio ? null : (
                   <Tooltip content="У этой трансляции нет звука" placement="top" plain>
                     <span className="inline-flex">
                       <IconButton icon="volume-off" label="У этой трансляции нет звука" isDisabled />

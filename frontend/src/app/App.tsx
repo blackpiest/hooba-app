@@ -5,6 +5,7 @@ import { VoiceOverlayPage } from "../features/voice/voice-overlay/VoiceOverlayPa
 import { ToastsPage } from "../features/desktop-toasts/ToastsPage";
 import { AppErrorBoundary } from "../shared/ui/app-error-boundary/AppErrorBoundary";
 import { BootSplash } from "../shared/ui/boot-splash/BootSplash";
+import { ServerRailPreview } from "../widgets/server-rail/ServerRailPreview";
 
 /** Окна `/overlay`, `/live` и `/toasts` в десктопе — отдельные renderer-процессы. Без lazy каждый парсил бы весь бандл (~1.2 МБ). */
 const MainApp = lazy(() => import("./MainApp"));
@@ -22,7 +23,7 @@ export function App() {
   }
   return (
     <AppErrorBoundary>
-      <Suspense fallback={<BootSplash />}>
+      <Suspense fallback={<BootSplash aside={<ServerRailPreview />} />}>
         <MainApp />
       </Suspense>
     </AppErrorBoundary>

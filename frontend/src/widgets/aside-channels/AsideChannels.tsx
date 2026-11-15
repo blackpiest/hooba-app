@@ -5,7 +5,7 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-ki
 import { deleteChannelApi, reorderChannelsApi, type ChannelDto } from "@/shared/api/channels";
 import type { UserDirectoryEntry } from "@/shared/api/users";
 import { formatApiError } from "@/shared/api/format-error";
-import { getUserVolume, setUserVolume } from "@/shared/lib/voice-volume-prefs";
+import { getStreamVolume, getUserVolume, setStreamVolume, setUserVolume } from "@/shared/lib/voice-volume-prefs";
 import { useIsTouch } from "@/hooks/use-breakpoint";
 import { setChannelNotificationMuted, useMutedChannelIds } from "@/features/chat/chat-notification-prefs";
 import { useUnreadChannelIds } from "@/features/chat/unread-channels";
@@ -480,6 +480,10 @@ export const AsideChannels = memo(function AsideChannels({
                                   username: member.username,
                                   channelId: room.id,
                                   volume: getUserVolume(member.user_id),
+                                  streamVolume:
+                                    screenShareByChannelId[room.id]?.user_id === member.user_id
+                                      ? getStreamVolume(member.user_id)
+                                      : null,
                                   serverMuted: member.server_muted === true,
                                 });
                               }}
@@ -509,6 +513,10 @@ export const AsideChannels = memo(function AsideChannels({
           onVolume={(volume) => {
             setUserVolume(memberMenu.userId, volume);
             setMemberMenu((current) => (current ? { ...current, volume } : current));
+          }}
+          onStreamVolume={(streamVolume) => {
+            setStreamVolume(memberMenu.userId, streamVolume);
+            setMemberMenu((current) => (current ? { ...current, streamVolume } : current));
           }}
           onAction={onMemberMenuAction}
         />

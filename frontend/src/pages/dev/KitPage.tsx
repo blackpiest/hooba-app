@@ -49,6 +49,8 @@ import {
   SegmentedControl,
   ComboBox,
   Select,
+  ServerHeaderButton,
+  ServerRailItem,
   Skeleton,
   Spinner,
   Swatches,
@@ -1066,6 +1068,22 @@ function DisplayDemo() {
           <Avatar name="Говорит" size="xl" speaking status="online" />
           <Avatar name="Профиль" size="profile" status="online" tone="#2a4a3d" />
           <AvatarStack items={[{ name: "Рифт" }, { name: "Кип" }, { name: "Искра" }, { name: "Эхо" }, { name: "Ноль" }]} />
+        </div>
+      </div>
+
+      <div>
+        <p className={LABEL}>ServerRailItem (панель серверов desktop)</p>
+        <div className="flex w-[72px] flex-col gap-2 border border-line py-2">
+          <ServerRailItem label="Текущий сервер" src={null} isActive />
+          <ServerRailItem label="Другой сервер" src={null} />
+          <ServerRailItem label="Добавить сервер" icon="plus" />
+        </div>
+      </div>
+
+      <div>
+        <p className={LABEL}>ServerHeaderButton (шапка сайдбара, открывает меню сервера)</p>
+        <div className="flex h-[52px] w-[260px] items-center border border-line px-2 text-sm font-semibold">
+          <ServerHeaderButton name="Test" src={null} />
         </div>
       </div>
 

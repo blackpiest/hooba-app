@@ -4,13 +4,23 @@ import { BrandBackdrop } from '@/shared/ui';
 
 /**
  * Общий слой страниц входа, регистрации и настройки: фон живёт на уровне роута и не пересоздаётся
- * при переходе между ними, поэтому его анимация не перезапускается.
+ * при переходе между ними, поэтому его анимация не перезапускается. `aside` — колонка слева от страницы.
  */
-export function AuthLayout() {
-  return (
+export function AuthLayout({ aside }: { aside?: ReactNode }) {
+  const page = (
     <div className="relative isolate min-h-dvh overflow-hidden max-md:fixed max-md:inset-0 max-md:overflow-y-auto" data-block="auth-layout">
       <BrandBackdrop className="ds-fill-screen max-md:fixed" />
       <Outlet />
+    </div>
+  );
+  if (!aside) {
+    return page;
+  }
+  // Колонка слева (панель серверов desktop), страница входа — справа от неё.
+  return (
+    <div className="flex h-full overflow-hidden bg-bg">
+      {aside}
+      <div className="min-w-0 flex-1 overflow-hidden">{page}</div>
     </div>
   );
 }

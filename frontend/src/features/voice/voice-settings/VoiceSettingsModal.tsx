@@ -471,11 +471,14 @@ export function VoiceSettingsModal({
                 </ListItem>
               ))}
             </nav>
-            <div className="mt-auto border-t border-line p-2">
-              <Button variant="danger-ghost" leadingIcon="logout" fullWidth onPress={() => setLogoutOpen(true)}>
-                Выйти из аккаунта
-              </Button>
-            </div>
+            {/* Desktop: настройки общие для всех серверов, выход — в меню сервера (название в шапке сайдбара). */}
+            {!isDesktopApp() ? (
+              <div className="mt-auto border-t border-line p-2">
+                <Button variant="danger-ghost" leadingIcon="logout" fullWidth onPress={() => setLogoutOpen(true)}>
+                  Выйти из аккаунта
+                </Button>
+              </div>
+            ) : null}
           </aside>
 
           <div className={`${mobileMenu ? "hidden" : "flex"} min-h-0 min-w-0 flex-1 flex-col md:flex`}>

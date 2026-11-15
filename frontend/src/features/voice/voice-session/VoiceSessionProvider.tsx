@@ -22,32 +22,42 @@ function voicePingTone(ms: number): "good" | "mid" | "bad" {
   return "bad";
 }
 
-function useVoicePingMs(): number | null {
+/** Пинг раз в 2 с; пока замера нет — чаще, чтобы значение появилось вместе с зелёной рамкой. */
+const PING_INTERVAL_MS = 2000;
+const PING_RETRY_MS = 250;
+
+/**
+ * Замер стартует заново, как только медиа подключилось (`active`): иначе после «Подключения»
+ * панель до 2 с стояла зелёной без числа, ожидая очередного тика старого интервала.
+ */
+function useVoicePingMs(active: boolean): number | null {
   const [pingMs, setPingMs] = useState<number | null>(null);
   useEffect(() => {
+    if (!active) {
+      return;
+    }
     let cancelled = false;
+    let timer = 0;
     const tick = () => {
       const handle = getVoiceMediasoupHandle();
-      if (!handle) {
-        if (!cancelled) {
-          setPingMs(null);
+      const measured = handle ? handle.measurePingMs() : Promise.resolve(null);
+      void measured.then((ms) => {
+        if (cancelled) {
+          return;
         }
-        return;
-      }
-      void handle.measurePingMs().then((ms) => {
-        if (!cancelled) {
-          setPingMs(ms);
-        }
+        setPingMs(ms);
+        timer = window.setTimeout(tick, ms == null ? PING_RETRY_MS : PING_INTERVAL_MS);
       });
     };
     tick();
-    const timer = window.setInterval(tick, 2000);
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
+      window.clearTimeout(timer);
+      // Старое значение не должно мелькнуть при следующем подключении.
+      setPingMs(null);
     };
-  }, []);
-  return pingMs;
+  }, [active]);
+  return active ? pingMs : null;
 }
 
 type VoiceSessionProviderProps = {
@@ -110,25 +120,31 @@ function VoiceConnectionPanel({
   const micLocked = serverMuted || speakDenied;
   const micLockedLabel = serverMuted ? "Микрофон отключён администратором" : "У вас нет права говорить в этом канале";
   const mediaStatus = useVoiceSessionUi((s) => s.mediaStatus);
-  const pingMs = useVoicePingMs();
   // Пока звук не пошёл, пинга нет, а зелёная рамка обещала бы связь, которой ещё нет.
-  const connecting = !error && (mediaStatus === "connecting" || mediaStatus === "rerouting");
+  // `idle` без ошибки — панель уже видна, а медиа ещё не запущено (первый вход после загрузки):
+  // это тоже подключение. Сбой медиа всегда выставляет ошибку, так что «повиснуть» здесь нельзя.
+  const connecting = !error && mediaStatus !== "connected";
+  const pingMs = useVoicePingMs(mediaStatus === "connected");
   const tone = pingMs == null ? "good" : voicePingTone(pingMs);
   // Фон нейтральный; качество связи показывают обводка и значение пинга.
   const pingToneClass = tone === "bad" ? "text-danger" : tone === "mid" ? "text-warning" : "text-success";
   const borderToneClass = connecting
-    ? "ds-border-pulse"
+    ? "border-line"
     : tone === "bad"
       ? "border-danger/45"
       : tone === "mid"
         ? "border-warning/45"
         : "border-success/45";
   return (
-    <div className={cx("mx-2 mb-2 border bg-surface px-2 py-2", borderToneClass)}>
+    <div className={cx("ds-tone-shift relative mx-2 mb-2 border bg-surface px-2 py-2", borderToneClass)}>
+      {/* Связь появилась или сменила качество — от рамки один раз расходится кольцо нового цвета. */}
+      {connecting ? null : (
+        <span key={tone} aria-hidden="true" className={cx("ds-tone-flash pointer-events-none absolute -inset-px", pingToneClass)} />
+      )}
       <div className="flex items-baseline justify-between gap-2">
-        <p className="font-label text-[10px] uppercase text-muted">Голосовая связь</p>
+        <p className="font-label text-[10px] uppercase text-muted">{connecting ? "Подключение" : "Голосовая связь"}</p>
         {connecting ? (
-          <LoadingDots tone="muted" label="Подключение к голосу" className="self-center" />
+          <LoadingDots tone="muted" size="sm" label="Подключение к голосу" className="self-center" />
         ) : pingMs != null ? (
           <p className={cx("font-label text-[10px] tabular-nums", pingToneClass)} aria-label={`Пинг ${pingMs} миллисекунд`}>
             {pingMs} мс
@@ -147,7 +163,7 @@ function VoiceConnectionPanel({
               icon={muted ? "mic-off" : "mic"}
               variant={muted ? "danger" : "ghost"}
               className="flex-1"
-              isDisabled={micLocked}
+              isDisabled={micLocked || connecting}
               pressed={muted}
               label={micLocked ? micLockedLabel : muted ? "Включить микрофон" : "Выключить микрофон"}
               onPress={() => sendVoiceMute()}
@@ -157,11 +173,12 @@ function VoiceConnectionPanel({
         <IconButton
           icon={deafened ? "headphones-off" : "headphones"}
           className="flex-1"
+          isDisabled={connecting}
           pressed={deafened}
           label={deafened ? "Включить звук" : "Отключить звук"}
           onPress={() => sendVoiceDeafen()}
         />
-        {canCaptureScreen ? <ScreenShareButton channelId={channelId} /> : null}
+        {canCaptureScreen ? <ScreenShareButton channelId={channelId} connecting={connecting} /> : null}
         <IconButton
           icon="phone-off"
           variant="danger"
@@ -178,7 +195,7 @@ function VoiceConnectionPanel({
 const canCaptureScreen =
   !isTouchInput() || (typeof navigator !== "undefined" && typeof navigator.mediaDevices?.getDisplayMedia === "function");
 
-function ScreenShareButton({ channelId }: { channelId: number }) {
+function ScreenShareButton({ channelId, connecting }: { channelId: number; connecting: boolean }) {
   const hosting = useScreenShareStore((s) => s.hosting);
   const openStart = useScreenShareStore((s) => s.openStart);
   const setHosting = useScreenShareStore((s) => s.setHosting);
@@ -197,7 +214,7 @@ function ScreenShareButton({ channelId }: { channelId: number }) {
           icon={hosting ? "screen-off" : "screen"}
           variant={hosting ? "danger" : "ghost"}
           className="flex-1"
-          isDisabled={busyByOther || (forbidden && !hosting)}
+          isDisabled={connecting || busyByOther || (forbidden && !hosting)}
           pressed={hosting}
           label={hosting ? "Завершить демонстрацию" : "Демонстрация экрана"}
           onPress={() => {

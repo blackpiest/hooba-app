@@ -1,19 +1,24 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { logout } from "@/shared/api/auth";
+import { openAddServer } from "@/features/server-switch/switch-server";
 import { getAccessToken, getRefreshToken } from "@/shared/lib/auth-storage";
 import { getServerUrl, isDesktopApp, type DesktopDeepLink } from "@/shared/lib/server-target";
 import { ConfirmDialog } from "@/shared/ui";
 
-function linkPath(link: DesktopDeepLink): string {
+function linkTarget(link: DesktopDeepLink): { path: string; params: URLSearchParams } {
   const params = new URLSearchParams({ server: link.server });
   if (link.kind === "login") {
-    return `/login?${params.toString()}`;
+    return { path: "/login", params };
   }
   if (link.invite) {
     params.set("invite", link.invite);
   }
-  return `/register?${params.toString()}`;
+  return { path: "/register", params };
+}
+
+function linkPath(link: DesktopDeepLink): string {
+  const { path, params } = linkTarget(link);
+  return `${path}?${params.toString()}`;
 }
 
 function serverLabel(server: string): string {
@@ -35,7 +40,8 @@ function sameServer(a: string, b: string): boolean {
 /**
  * Ссылка hooba://register?server=…[&invite=…] или hooba://login?server=… из десктопа:
  * открывает регистрацию или вход с подставленными адресом (и кодом).
- * Если сессия уже есть — сначала спрашивает, можно ли выйти из текущего аккаунта; вход на тот же сервер просто игнорируется.
+ * Если сессия уже есть — спрашивает, отключиться ли от текущего сервера (вход на нём сохраняется, вернуться можно
+ * в панели серверов); вход на тот же сервер просто игнорируется.
  */
 export function InviteDeepLinkHandler() {
   const navigate = useNavigate();
@@ -66,35 +72,29 @@ export function InviteDeepLinkHandler() {
     return window.hoobaDesktop?.onDeepLink?.(take);
   }, [navigate]);
 
-  async function confirm() {
+  function confirm() {
     if (!link) {
       return;
     }
     setPending(true);
-    try {
-      await logout();
-      navigate(linkPath(link), { replace: true });
-      setLink(null);
-    } finally {
-      setPending(false);
-    }
+    const { path, params } = linkTarget(link);
+    openAddServer(path, params);
   }
 
   return (
     <ConfirmDialog
       isOpen={link !== null}
       onClose={() => setLink(null)}
-      onConfirm={() => void confirm()}
-      title="Выйти из аккаунта?"
+      onConfirm={confirm}
+      title="Перейти на другой сервер?"
       description={
         link
           ? link.kind === "login"
-            ? `Ссылка на вход на сервер ${serverLabel(link.server)}. Чтобы войти, нужно выйти из текущего аккаунта.`
-            : `Ссылка-приглашение на сервер ${serverLabel(link.server)}. Чтобы зарегистрироваться, нужно выйти из текущего аккаунта.`
+            ? `Ссылка на вход на сервер ${serverLabel(link.server)}. Вы отключитесь от текущего сервера, вход на нём сохранится — вернуться можно в панели серверов слева.`
+            : `Ссылка-приглашение на сервер ${serverLabel(link.server)}. Вы отключитесь от текущего сервера, вход на нём сохранится — вернуться можно в панели серверов слева.`
           : undefined
       }
-      confirmLabel="Выйти"
-      tone="danger"
+      confirmLabel="Перейти"
       isPending={pending}
     />
   );

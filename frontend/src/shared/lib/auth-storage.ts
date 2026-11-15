@@ -86,6 +86,23 @@ export function getRefreshToken(): string | null {
   return localStorage.getItem(storageKey(REFRESH));
 }
 
+/** Есть ли сохранённый вход на сервере `origin` (desktop: токены хранятся отдельно для каждого сервера). */
+export function hasStoredSession(origin: string): boolean {
+  return Boolean(localStorage.getItem(`${REFRESH}::${origin}`));
+}
+
+/** Refresh-токен сервера `origin` (не обязательно текущего). */
+export function getStoredRefreshToken(origin: string): string | null {
+  return localStorage.getItem(`${REFRESH}::${origin}`);
+}
+
+/** Удалить сохранённый вход на сервере `origin` (не обязательно текущем). */
+export function clearStoredSession(origin: string): void {
+  for (const base of [ACCESS, REFRESH, ACCESS_EXPIRES_AT]) {
+    localStorage.removeItem(`${base}::${origin}`);
+  }
+}
+
 const SESSION_TOKEN_BASES = [ACCESS, REFRESH, ACCESS_EXPIRES_AT];
 
 /** Ключ localStorage этой или другой вкладки, в котором лежат токены текущей сессии. */

@@ -96,7 +96,8 @@ export function UserDock({
   onOpenNews: () => void;
   onDismissNews: () => void;
   onPresence: (status: PresencePreference) => void;
-  onSettings: () => void;
+  /** Нет — кнопки настроек в доке нет (desktop: она внизу панели серверов). */
+  onSettings?: () => void;
 }) {
   const userButtonRef = useRef<HTMLButtonElement>(null);
   return (
@@ -140,9 +141,11 @@ export function UserDock({
           </DropdownMenu>
         )}
       >
-        <Tooltip content="Настройки">
-          <IconButton icon="gear" label="Настройки" onPress={onSettings} />
-        </Tooltip>
+        {onSettings ? (
+          <Tooltip content="Настройки">
+            <IconButton icon="gear" label="Настройки" onPress={onSettings} />
+          </Tooltip>
+        ) : null}
       </UserDockBar>
       <AnchoredPopover
         triggerRef={userButtonRef}

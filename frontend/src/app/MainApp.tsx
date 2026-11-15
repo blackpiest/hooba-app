@@ -13,6 +13,8 @@ import { InviteDeepLinkHandler } from "../features/invite-link/InviteDeepLinkHan
 import { DesktopUpdateNotice } from "../widgets/desktop-update/DesktopUpdateNotice";
 import { ReleaseNotesDialog } from "../widgets/release-notes";
 import { WindowControls } from "../widgets/window-controls/WindowControls";
+import { AuthServerRail } from "../widgets/server-rail/AuthServerRail";
+import { isDesktopApp } from "../shared/lib/server-target";
 
 /** Витрина UI-кита — только в dev-сборке (в прод-бандл не попадает). */
 const KitPage = import.meta.env.DEV
@@ -36,7 +38,7 @@ export default function MainApp() {
       <ReleaseNotesDialog />
       <InviteDeepLinkHandler />
       <Routes>
-        <Route element={<AuthLayout />}>
+        <Route element={<AuthLayout aside={isDesktopApp() ? <AuthServerRail /> : undefined} />}>
           <Route path="/setup" element={<SetupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

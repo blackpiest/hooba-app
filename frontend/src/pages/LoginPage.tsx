@@ -10,6 +10,7 @@ import { ServerAddressField } from '../shared/ui/server-address-field/ServerAddr
 import { playAuthSuccessSound } from '@/features/ui-sounds/ui-sounds';
 import { Alert, Button, Dialogue, PasswordField, TextField, linkClass } from '@/shared/ui';
 import { useIsTouch } from '@/hooks/use-breakpoint';
+import { ADD_SERVER_PARAM } from '@/features/server-switch/add-server-mode';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -23,8 +24,10 @@ export function LoginPage() {
       : null;
   const [searchParams, setSearchParams] = useSearchParams();
   const isTouch = useIsTouch();
+  // Вход на ещё один сервер из панели серверов: сессия на текущем остаётся, вернуться к нему можно в панели серверов.
+  const [adding] = useState(() => isDesktopApp() && searchParams.get(ADD_SERVER_PARAM) === '1');
   const [serverAddress, setServerAddress] = useState(() =>
-    isDesktopApp() ? (searchParams.get('server') ?? getServerUrl() ?? '') : '',
+    isDesktopApp() ? (searchParams.get('server') ?? (adding ? '' : getServerUrl()) ?? '') : '',
   );
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -56,20 +59,21 @@ export function LoginPage() {
   const hasSession = Boolean(getAccessToken() || getRefreshToken());
 
   useEffect(() => {
-    if (hasSession) {
+    if (hasSession && !adding) {
       navigate('/app', { replace: true });
     }
-  }, [hasSession, navigate]);
+  }, [hasSession, adding, navigate]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setServerError(null);
     setLoading(true);
+    let restoreServer = (): void => {};
     try {
       if (isDesktopApp()) {
         try {
-          await commitServerAddress(serverAddress);
+          restoreServer = await commitServerAddress(serverAddress);
         } catch (err: unknown) {
           setServerError(err instanceof Error ? err.message : 'Ошибка подключения');
           return;
@@ -77,8 +81,10 @@ export function LoginPage() {
       }
       await login(username, password);
       playAuthSuccessSound();
+      // Перезагрузка не нужна и в режиме `add`: на экран входа пришли перезагрузкой, от прежнего сервера уже отключены.
       navigate('/app', { replace: true });
     } catch (err: unknown) {
+      restoreServer();
       setError(err instanceof Error ? formatApiError(err.message, 'Ошибка входа') : 'Ошибка входа');
     } finally {
       setLoading(false);
@@ -86,7 +92,7 @@ export function LoginPage() {
   }
 
   // Идёт редирект в приложение — форму входа не показываем.
-  if (hasSession) {
+  if (hasSession && !adding) {
     return null;
   }
 
@@ -118,7 +124,7 @@ export function LoginPage() {
       footer={
         <>
           Нет аккаунта?{' '}
-          <Link to="/register" draggable={false} className={linkClass}>
+          <Link to={adding ? `/register?${ADD_SERVER_PARAM}=1` : '/register'} draggable={false} className={linkClass}>
             Регистрация по инвайту
           </Link>
         </>
