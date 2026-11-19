@@ -25,6 +25,7 @@ import type { VoiceMediaDebug } from "../webrtc-voice.types";
 import { InputSensitivityControl } from "@/features/voice/InputSensitivityControl";
 import { VolumeSlider } from "@/features/voice/VolumeSlider";
 import { VoiceSoundCheck } from "@/features/voice/voice-settings/VoiceSoundCheck";
+import { DesktopVersionSettings } from "@/features/voice/voice-settings/DesktopVersionSettings";
 import type { VoiceActivationMode } from "@/shared/lib/voice-activation-prefs";
 import type { VoiceCaptureMode } from "@/shared/lib/voice-processing-prefs";
 import {
@@ -320,6 +321,7 @@ function SystemSettings() {
           }}
         />
       </SettingRow>
+      {desktop ? <DesktopVersionSettings /> : null}
     </section>
   );
 }

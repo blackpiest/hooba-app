@@ -27,6 +27,12 @@ export type DesktopUpdateState = {
   percent: number;
 };
 
+/** Итог ручной проверки обновлений: `unavailable` — dev-сборка или не задан адрес обновлений, `busy` — обновление уже качается или готово. */
+export type DesktopUpdateCheckResult = {
+  status: "unavailable" | "current" | "available" | "busy" | "error";
+  version: string;
+};
+
 /** Заметки к релизу из билда десктопа (`desktop/release-notes.md`). */
 export type DesktopReleaseNotes = {
   version: string;
@@ -69,6 +75,8 @@ declare global {
       takeDeepLink?: () => Promise<DesktopDeepLink | null>;
       /** Сигнал «пришла новая ссылка»: саму ссылку отдаёт takeDeepLink. */
       onDeepLink?: (listener: () => void) => () => void;
+      /** Нет у десктопа старше этой версии. */
+      checkUpdates?: () => Promise<DesktopUpdateCheckResult>;
       downloadUpdate?: () => Promise<void>;
       installUpdate?: () => Promise<void>;
       flushStorage?: () => void;
@@ -95,12 +103,21 @@ declare global {
       /** Нет у десктопа старше этой версии. Выход из аккаунта из меню трея (подтверждение уже получено). */
       onTrayLogout?: (listener: () => void) => () => void;
       setTrayAttention?: (attention: boolean) => void;
+      /** Нет у десктопа старше этой версии. Имя сервера для заголовка окна и трея; null — не вошли. */
+      setActiveServer?: (name: string | null) => void;
       getOpenAtLogin?: () => Promise<boolean>;
       setOpenAtLogin?: (enabled: boolean) => Promise<boolean>;
       windowHidden?: () => Promise<boolean>;
       onWindowHidden?: (listener: (hidden: boolean) => void) => () => void;
       listScreenSources?: () => Promise<DesktopScreenSource[]>;
       prepareScreenCapture?: (sourceId: string, audio: boolean) => Promise<void>;
+      /** Нет у десктопа старше этой версии. Звук источника демонстрации (Windows): PCM float32, каналы чередуются. */
+      startAppAudio?: (
+        sourceId: string,
+      ) => Promise<{ ok: true; id: number; sampleRate: number; channels: number } | { ok: false; reason: string }>;
+      stopAppAudio?: (id: number) => Promise<void>;
+      onAppAudioData?: (listener: (id: number, data: Uint8Array) => void) => () => void;
+      onAppAudioEnded?: (listener: (id: number) => void) => () => void;
       setPushToTalkBinding?: (binding: PttKeyBinding | null) => Promise<PttHookResult>;
       startPushToTalkCapture?: () => Promise<PttHookResult>;
       cancelPushToTalkCapture?: () => Promise<void>;

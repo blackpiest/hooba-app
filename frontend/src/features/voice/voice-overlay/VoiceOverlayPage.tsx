@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Icon, SpeakingEq } from "@/shared/ui";
+import { Badge, Icon, SpeakingEq } from "@/shared/ui";
 import type { VoiceOverlaySnapshot } from "@/shared/lib/voice-overlay";
 import { cx } from "@/utils/cx";
 import { UserAvatar } from "@/shared/ui/user-avatar/UserAvatar";
@@ -107,6 +107,11 @@ export function VoiceOverlayPage() {
               ) : null}
             </span>
             <span className="min-w-0 flex-1 truncate bg-bg/70 px-1.5 tracking-wide">{participant.username}</span>
+            {participant.live ? (
+              <Badge variant="live" className="shrink-0">
+                LIVE
+              </Badge>
+            ) : null}
             {participant.muted || participant.deafened ? (
               <span className="flex shrink-0 items-center gap-0.5">
                 {participant.muted ? <OverlayBadge title="Микрофон выключен" variant="mute" /> : null}

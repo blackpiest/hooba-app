@@ -11,7 +11,9 @@ COPY frontend/ ./
 ENV NODE_ENV=production
 RUN pnpm run build
 
-FROM nginx:1.27-alpine
+# Стабильная ветка nginx; `hooba update` собирает с --pull и подтягивает патчи 1.30.x.
+# Не ниже 1.30.7: исправлены CVE-2026-123007 и CVE-2026-123633 (HTTP/2, у нас http2 on).
+FROM nginx:1.30-alpine
 COPY infra/docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY infra/docker/nginx/turns.conf.stream-template /etc/nginx/templates/turns.conf.stream-template
 COPY --from=frontend-build /app/dist /usr/share/nginx/html

@@ -4,6 +4,8 @@ import { useMemberProfileStore, type MemberProfile } from "@/stores/member-profi
 import { resolveAvatarLook, useAvatarStore } from "@/stores/avatar-store";
 import type { AvatarCatalog, UserAvatar } from "@/shared/api/avatars";
 import { useVoiceStore, type VoiceParticipant } from "@/stores/voice-store";
+import { useVoiceRoomsStore } from "@/stores/voice-rooms-store";
+import { useScreenShareStore } from "@/features/screenshare/screen-share-store";
 import { isDesktopApp } from "@/shared/lib/server-target";
 import { displayNameOf } from "@/shared/lib/display-name";
 import {
@@ -22,6 +24,7 @@ function buildSnapshot(
   participants: VoiceParticipant[],
   inboundHearing: Record<string, boolean>,
   meId: number | null,
+  streamerId: number | null,
   catalog: AvatarCatalog | null,
   avatarByUserId: Record<number, UserAvatar | null>,
   profileByUserId: Record<number, MemberProfile>,
@@ -47,6 +50,7 @@ function buildSnapshot(
         meId !== null && participant.user_id === meId
           ? participant.speaking
           : inboundHearing[String(participant.user_id)] === true,
+      live: streamerId !== null && participant.user_id === streamerId,
       avatar: resolveAvatarLook(catalog, avatarByUserId[participant.user_id]),
     });
   }
@@ -68,6 +72,13 @@ export function VoiceOverlayBridge({ channelName }: { channelName?: string }) {
   const catalog = useAvatarStore((s) => s.catalog);
   const avatarByUserId = useAvatarStore((s) => s.avatarByUserId);
   const profileByUserId = useMemberProfileStore((s) => s.profileByUserId);
+  const roomStreamerId = useVoiceRoomsStore((s) =>
+    activeChannelId == null ? null : (s.screenShareByChannelId[activeChannelId]?.user_id ?? null),
+  );
+  const hostChannelId = useScreenShareStore((s) => (s.hosting ? s.hostChannelId : null));
+  // Свой показ — сразу, не дожидаясь, пока сервер разошлёт состояние комнаты.
+  const streamerId =
+    roomStreamerId ?? (activeChannelId != null && hostChannelId === activeChannelId ? meId : null);
 
   useEffect(() => {
     if (!isDesktopApp()) {
@@ -81,12 +92,24 @@ export function VoiceOverlayBridge({ channelName }: { channelName?: string }) {
         participants,
         inboundHearing,
         meId,
+        streamerId,
         catalog,
         avatarByUserId,
         profileByUserId,
       ),
     );
-  }, [enabled, channelName, activeChannelId, participants, inboundHearing, meId, catalog, avatarByUserId, profileByUserId]);
+  }, [
+    enabled,
+    channelName,
+    activeChannelId,
+    participants,
+    inboundHearing,
+    meId,
+    streamerId,
+    catalog,
+    avatarByUserId,
+    profileByUserId,
+  ]);
 
   useEffect(() => {
     if (!isDesktopApp()) {

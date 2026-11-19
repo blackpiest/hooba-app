@@ -1,12 +1,16 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { isDesktopApp } from '@/shared/lib/server-target';
 import { WindowControls as WindowControlsView } from '@/shared/ui';
+import { useUserStore } from '@/stores/user-store';
 
 export function WindowControls() {
   const [maximized, setMaximized] = useState(false);
   const desktop = isDesktopApp();
   const version = window.hoobaDesktop?.version?.trim();
-  const title = version ? `Hooba ${version}` : 'Hooba';
+  // Имя активного сервера есть только после входа; на экранах входа — одна версия.
+  const serverName = useUserStore((state) => state.me?.server_name?.trim() || null);
+  const appTitle = version ? `Hooba ${version}` : 'Hooba';
+  const title = serverName ? `${appTitle} — ${serverName}` : appTitle;
 
   useLayoutEffect(() => {
     if (!desktop) {
@@ -20,6 +24,12 @@ export function WindowControls() {
       root.dataset.platform = platform;
     }
   }, [desktop, title]);
+
+  useEffect(() => {
+    if (desktop) {
+      window.hoobaDesktop?.setActiveServer?.(serverName);
+    }
+  }, [desktop, serverName]);
 
   useEffect(() => {
     if (!desktop) {
@@ -36,7 +46,7 @@ export function WindowControls() {
     <>
       <div className="pointer-events-none fixed top-0 left-1/2 z-[70] flex h-7 -translate-x-1/2 items-center gap-2 text-xs font-semibold tracking-[0.01em] text-fg select-none">
         <img src="/hooba-favicon.png" alt="" width={16} height={16} className="size-4 object-cover" />
-        <span>{title}</span>
+        <span className="max-w-[min(480px,50vw)] truncate">{title}</span>
       </div>
       <WindowControlsView
         className="fixed top-0 right-0 z-[80] h-7 items-center [-webkit-app-region:no-drag] [html[data-platform=darwin]_&]:hidden"

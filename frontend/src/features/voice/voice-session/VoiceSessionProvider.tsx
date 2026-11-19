@@ -9,7 +9,9 @@ import { useUserStore } from "@/stores/user-store";
 import { useVoiceRoomsStore } from "@/stores/voice-rooms-store";
 import { useVoiceStore } from "@/stores/voice-store";
 import { useScreenShareStore } from "@/features/screenshare/screen-share-store";
+import { startWebScreenShare } from "@/features/screenshare/start-screen-share";
 import { isTouchInput } from "@/hooks/use-breakpoint";
+import { isDesktopApp } from "@/shared/lib/server-target";
 
 /** Как у Discord: до 100 мс хорошо, до 200 средне, дальше плохо. */
 function voicePingTone(ms: number): "good" | "mid" | "bad" {
@@ -222,7 +224,12 @@ function ScreenShareButton({ channelId, connecting }: { channelId: number; conne
               void getVoiceMediasoupHandle()?.stopScreenShare().then(() => setHosting(null));
               return;
             }
-            openStart();
+            if (isDesktopApp()) {
+              openStart();
+              return;
+            }
+            // Веб: источник и звук выбираются в окне браузера — модалка Хубы была бы лишним шагом.
+            void startWebScreenShare();
           }}
         />
       </span>

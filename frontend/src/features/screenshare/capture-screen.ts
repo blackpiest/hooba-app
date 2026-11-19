@@ -1,4 +1,5 @@
 import { isDesktopApp } from "@/shared/lib/server-target";
+import { startDesktopAppAudio } from "./desktop-app-audio";
 import type { ScreenShareProfile, ScreenShareSurface } from "./screen-share-profiles";
 
 /**
@@ -14,6 +15,12 @@ function isAudioCaptureError(error: unknown): boolean {
   }
   return /audio/i.test(error.message) || (isDesktopApp() && error.name === "NotReadableError");
 }
+
+/** Подсказки окну выбора Chrome; другие браузеры их игнорируют. В lib.dom есть не везде. */
+type BrowserAudioHints = {
+  systemAudio?: "include" | "exclude";
+  windowAudio?: "exclude" | "window" | "system";
+};
 
 export async function captureScreen(input: {
   profile: ScreenShareProfile;
@@ -40,18 +47,38 @@ export async function captureScreen(input: {
       // Выбор источника одноразовый: main забирает его на каждый getDisplayMedia.
       await window.hoobaDesktop?.prepareScreenCapture?.(sourceId, audio);
     }
-    return navigator.mediaDevices.getDisplayMedia({ video, audio: audio ? ownAudioExcluded : false });
+    const options: DisplayMediaStreamOptions & BrowserAudioHints = {
+      video,
+      audio: audio ? ownAudioExcluded : false,
+    };
+    if (audio && !isDesktopApp()) {
+      // Chrome: предлагать звук и у экрана, а у окна — звук только этого приложения (Chrome 141+).
+      // Включён ли переключатель «Поделиться звуком» по умолчанию, решает браузер — сайт на это не влияет.
+      options.systemAudio = "include";
+      options.windowAudio = "window";
+    }
+    return navigator.mediaDevices.getDisplayMedia(options);
   };
   let stream: MediaStream;
   let audioFailed = false;
+  // Десктоп: звук ровно выбранного источника (окно — только его приложение). Без хелпера окно идёт
+  // без звука — loopback Electron отдал бы звук всей системы; весь экран — запасным путём через loopback.
+  const appAudio = isDesktopApp() && sourceId && shareAudio ? await startDesktopAppAudio(sourceId) : null;
+  const systemAudio = shareAudio && !appAudio && !(isDesktopApp() && sourceId?.startsWith("window:"));
   try {
-    stream = await request(shareAudio);
+    stream = await request(systemAudio);
   } catch (error) {
-    if (!shareAudio || !isAudioCaptureError(error)) {
+    if (!systemAudio || !isAudioCaptureError(error)) {
+      appAudio?.stop();
       throw error;
     }
     console.warn("[screen] system audio capture failed, retry without audio", error);
     stream = await request(false);
+    audioFailed = true;
+  }
+  if (appAudio) {
+    stream.addTrack(appAudio);
+  } else if (shareAudio && !systemAudio) {
     audioFailed = true;
   }
   const track = stream.getVideoTracks()[0];

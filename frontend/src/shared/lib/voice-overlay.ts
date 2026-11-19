@@ -7,6 +7,8 @@ export type VoiceOverlayParticipant = {
   muted: boolean;
   deafened: boolean;
   speaking: boolean;
+  /** Сейчас ведёт демонстрацию экрана в этом канале — метка LIVE. */
+  live: boolean;
   /** Абсолютный URL головы персонажа и спека фона из каталога; null — буквенный. */
   avatar: AvatarLook | null;
 };

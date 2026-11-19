@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { getVoiceMediasoupHandle } from "@/features/voice/voice-settings/voice-settings";
-import { useVoiceStore } from "@/stores/voice-store";
 import { isDesktopApp } from "@/shared/lib/server-target";
 import type { DesktopScreenSource } from "@/shared/lib/server-target";
 import {
@@ -13,9 +11,7 @@ import {
   SectionLabel,
   SegmentedControl,
   TileGrid,
-  toast,
 } from "@/shared/ui";
-import { captureScreen } from "./capture-screen";
 import {
   SCREEN_SHARE_PROFILES,
   screenShareErrorText,
@@ -23,11 +19,12 @@ import {
   type ScreenShareSurface,
 } from "./screen-share-profiles";
 import { useScreenShareStore } from "./screen-share-store";
+import { startScreenShare } from "./start-screen-share";
 
+/** Выбор источника, качества и звука перед показом — только десктоп; веб сразу открывает окно браузера. */
 export function ScreenShareStartModal() {
   const open = useScreenShareStore((s) => s.startOpen);
   const closeStart = useScreenShareStore((s) => s.closeStart);
-  const setHosting = useScreenShareStore((s) => s.setHosting);
   const [quality, setQuality] = useState<ScreenShareQuality>("game");
   const [surface, setSurface] = useState<ScreenShareSurface>("window");
   const [shareAudio, setShareAudio] = useState(true);
@@ -75,52 +72,19 @@ export function ScreenShareStartModal() {
   }
 
   const visibleSources = sources.filter((row) => (surface === "monitor" ? row.kind === "screen" : row.kind === "window"));
-  const profile = SCREEN_SHARE_PROFILES[quality];
-
   async function start() {
-    const channelId = useVoiceStore.getState().activeChannelId;
-    const handle = getVoiceMediasoupHandle();
-    if (channelId == null || !handle) {
-      setError("Сначала подключитесь к голосовому каналу");
-      return;
-    }
-    if (!handle.canPublishScreen()) {
-      setError("Переподключитесь к голосовому каналу и попробуйте снова");
-      return;
-    }
     setBusy(true);
     setError(null);
-    let stream: MediaStream | null = null;
     try {
-      const captured = await captureScreen({
-        profile,
+      await startScreenShare({
+        quality,
         surface,
         shareAudio,
         sourceId: desktop ? sourceId : null,
-      });
-      stream = captured.stream;
-      await handle.publishScreenShare(stream, {
-        maxBitrate: profile.maxBitrate,
-        maxFramerate: profile.frameRate,
-      });
-      const sourceLabel = desktop
-        ? (sources.find((row) => row.id === sourceId)?.name ?? null)
-        : (stream.getVideoTracks()[0]?.label ?? null);
-      setHosting(channelId, {
-        quality,
-        surface,
-        sourceLabel: sourceLabel?.trim() || null,
-        hasAudio: stream.getAudioTracks().length > 0,
+        sourceName: desktop ? (sources.find((row) => row.id === sourceId)?.name ?? null) : undefined,
       });
       closeStart();
-      if (captured.audioFailed) {
-        toast.warning(
-          "Демонстрация без звука",
-          "Не удалось захватить звук системы. Проверьте устройство вывода звука и перезапустите показ",
-        );
-      }
     } catch (startError) {
-      stream?.getTracks().forEach((track) => track.stop());
       const text = screenShareErrorText(startError);
       if (text !== "Показ экрана отменён") {
         setError(text);

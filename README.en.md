@@ -6,7 +6,11 @@
   <a href="README.md">Русский</a> | <strong>English</strong>
 </p>
 
-A self-hosted, Discord-style messenger: text channels, voice (up to 8 people), screen sharing, roles, reactions and profile cosmetics. One server hosts one community. The client is a web app that runs in the browser.
+<p align="center">
+  <a href="https://hooba.space">Download the app</a> · <a href="https://docs.hooba.space/en/">Server owner docs</a> · <a href="https://t.me/hooba_app">Telegram</a>
+</p>
+
+A self-hosted, Discord-style messenger: text channels, voice, screen sharing, roles, reactions and profile cosmetics. One server hosts one community. The client is a web app that runs in the browser.
 
 ![The Hooba interface: channels, chat and member list](assets/screenshot.webp)
 
@@ -127,6 +131,8 @@ If `hooba` isn't found (`command not found`), the same thing works like this: `/
 ## Bugs and suggestions
 
 Found a bug or have an idea? [Open an issue](https://github.com/blackpiest/hooba-app/issues/new/choose). Installation and setup questions are covered in the [documentation for Hooba server owners](https://docs.hooba.space/en/).
+
+Follow the news and ask questions in our Telegram channel [@hooba_app](https://t.me/hooba_app) (in Russian).
 
 Report vulnerabilities only privately, see [SECURITY.md](SECURITY.md).
 
